@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Code Editor Mobile</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/editor/editor.main.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: #1e1e1e;
+            color: #fff;
+            overflow: hidden;
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        /* Header */
+        .header {
+            background: #2d2d30;
+            display: flex;
+            align-items: center;
+            padding: 8px;
+            gap: 8px;
+            flex-shrink: 0;
+            border-bottom: 1px solid #3e3e42;
+        }
+        
+        .logo {
+            font-size: 18px;
+            font-weight: bold;
+            color: #007acc;
+            margin-right: auto;
+        }
+        
+        .header-btn {
+            background: none;
+            border: none;
+            color: #ccc;
+            padding: 6px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s;
+        }
+        
+        .header-btn:hover {
+            background: #3e3e42;
+            color: #fff;
+        }
+        
+        /* Tabs */
+        .tabs-container {
+            background: #252526;
+            display: flex;
+            overflow-x: auto;
+            scrollbar-width: thin;
+            flex-shrink: 0;
+            border-bottom: 1px solid #3e3e42;
+        }
+        
+        .tab {
+            display: flex;
+            align-items: center;
+            padding: 8px 12px;
+            background: #2d2d30;
+            border-right: 1px solid #252526;
+            cursor: pointer;
+            font-size: 13px;
+            white-space: nowrap;
+            transition: background 0.2s;
+        }
+        
+        .tab.active {
+            background: #1e1e1e;
+            color: #fff;
+        }
+        
+        .tab:hover {
+            background: #37373d;
+        }
+        
+        .tab-close {
+            margin-left: 8px;
+            cursor: pointer;
+            opacity: 0.5;
+            font-size: 16px;
+        }
+        
+        .tab-close:hover {
+            opacity: 1;
+        }
+        
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            display: flex;
+            overflow: hidden;
+        }
+        
+        .sidebar {
+            width: 200px;
+            background: #252526;
+            border-right: 1px solid #3e3e42;
+            display: flex;
+            flex-direction: column;
+            transition: margin-left 0.3s;
+        }
+        
+        .sidebar.hidden {
+            margin-left: -200px;
+        }
+        
+        .sidebar-header {
+            padding: 10px;
+            background: #2d2d30;
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #ccc;
+            border-bottom: 1px solid #3e3e42;
+        }
+        
+        .file-tree {
+            flex: 1;
+            overflow-y: auto;
+            padding: 8px;
+        }
+        
+        .file-item {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            border-radius: 4px;
+            transition: background 0.2s;
+            margin-bottom: 2px;
+        }
+        
+        .file-item:hover {
+            background: #37373d;
+        }
+        
+        .file-item.active {
+            background: #094771;
+        }
+        
+        /* Editor Container */
+        .editor-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .editor-wrapper {
+            flex: 1;
+            position: relative;
+        }
+        
+        #editor {
+            width: 100%;
+            height: 100%;
+        }
+        
+        /* Terminal */
+        .terminal {
+            height: 200px;
+            background: #1e1e1e;
+            border-top: 1px solid #3e3e42;
+            display: none;
+            flex-direction: column;
+        }
+        
+        .terminal.active {
+            display: flex;
+        }
+        
+        .terminal-header {
+            background: #252526;
+            padding: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            color: #ccc;
+        }
+        
+        .terminal-content {
+            flex: 1;
+            padding: 10px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+            overflow-y: auto;
+            color: #0f0;
+            white-space: pre-wrap;
+        }
+        
+        .terminal-input {
+            background: #1e1e1e;
+            border: none;
+            border-top: 1px solid #3e3e42;
+            color: #fff;
+            padding: 8px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 12px;
+        }
+        
+        /* Git Panel */
+        .git-panel {
+            position: fixed;
+            right: -300px;
+            top: 0;
+            width: 300px;
+            height: 100vh;
+            background: #252526;
+            box-shadow: -2px 0 5px rgba(0,0,0,0.3);
+            transition: right 0.3s;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .git-panel.active {
+            right: 0;
+        }
+        
+        .git-header {
+            background: #2d2d30;
+            padding: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid #3e3e42;
+        }
+        
+        .git-content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+        }
+        
+        .git-section {
+            margin-bottom: 20px;
+        }
+        
+        .git-section h3 {
+            font-size: 13px;
+            margin-bottom: 8px;
+            color: #ccc;
+        }
+        
+        .git-file {
+            padding: 6px;
+            font-size: 12px;
+            border-radius: 4px;
+            margin-bottom: 4px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .git-file:hover {
+            background: #37373d;
+        }
+        
+        .git-file.modified {
+            color: #e2c08d;
+        }
+        
+        .git-file.added {
+            color: #73c991;
+        }
+        
+        .git-file.deleted {
+            color: #f14c4c;
+        }
+        
+        .git-actions {
+            padding: 12px;
+            border-top: 1px solid #3e3e42;
+            display: flex;
+            gap: 8px;
+        }
+        
+        .git-btn {
+            flex: 1;
+            padding: 8px;
+            background: #0e639c;
+            border: none;
+            color: #fff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: background 0.2s;
+        }
+        
+        .git-btn:hover {
+            background: #1177bb;
+        }
+        
+        /* Search Panel */
+        .search-panel {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #252526;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+            width: 90%;
+            max-width: 500px;
+            display: none;
+            z-index: 200;
+        }
+        
+        .search-panel.active {
+            display: block;
+        }
+        
+        .search-input {
+            width: 100%;
+            padding: 10px;
+            background: #3c3c3c;
+            border: 1px solid #3e3e42;
+            color: #fff;
+            border-radius: 4px;
+            font-size: 14px;
+            margin-bottom: 10px;
+        }
+        
+        .search-results {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .search-result {
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 4px;
+            font-size: 13px;
+            margin-bottom: 4px;
+            transition: background 0.2s;
+        }
+        
+        .search-result:hover {
+            background: #37373d;
+        }
+        
+        /* Mobile Responsive */
+        @media (max-width: 768px) {
+            .sidebar {
+                position: fixed;
+                left: 0;
+                top: 0;
+                height: 100vh;
+                z-index: 50;
+                box-shadow: 2px 0 5px rgba(0,0,0,0.3);
+            }
+            
+            .sidebar.hidden {
+                left: -200px;
+            }
+            
+            .git-panel {
+                width: 100%;
+                right: -100%;
+            }
+            
+            .terminal {
+                height: 150px;
+            }
+        }
+        
+        /* Theme Selector */
+        .theme-selector {
+            position: absolute;
+            top: 50px;
+            right: 10px;
+            background: #252526;
+            border: 1px solid #3e3e42;
+            border-radius: 4px;
+            padding: 8px;
+            display: none;
+            z-index: 150;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .theme-selector.active {
+            display: block;
+        }
+        
+        .theme-option {
+            padding: 6px 12px;
+            cursor: pointer;
+            font-size: 13px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        
+        .theme-option:hover {
+            background: #37373d;
+        }
+        
+        /* Status Bar */
+        .status-bar {
+            background: #007acc;
+            color: #fff;
+            padding: 4px 12px;
+            font-size: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .status-info {
+            display: flex;
+            gap: 20px;
+        }
+        
+        .emmet-hint {
+            position: fixed;
+            bottom: 60px;
+            right: 20px;
+            background: rgba(0, 122, 204, 0.9);
+            color: #fff;
+            padding: 8px 16px;
+            border-radius: 4px;
+            font-size: 12px;
+            display: none;
+            animation: fadeIn 0.3s;
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="logo">CodeEdit Pro</div>
+        <button class="header-btn" onclick="toggleSidebar()">📁</button>
+        <button class="header-btn" onclick="toggleSearch()">🔍</button>
+        <button class="header-btn" onclick="toggleGit()">Git</button>
+        <button class="header-btn" onclick="toggleTerminal()">Terminal</button>
+        <button class="header-btn" onclick="toggleTheme()">🎨</button>
+    </div>
+    
+    <div class="tabs-container" id="tabs"></div>
+    
+    <div class="main-content">
+        <div class="sidebar" id="sidebar">
+            <div class="sidebar-header">Explorer</div>
+            <div class="file-tree" id="fileTree"></div>
+        </div>
+        
+        <div class="editor-container">
+            <div class="editor-wrapper">
+                <div id="editor"></div>
+            </div>
+            
+            <div class="terminal" id="terminal">
+                <div class="terminal-header">
+                    <span>Terminal</span>
+                    <span style="cursor: pointer;" onclick="toggleTerminal()">✕</span>
+                </div>
+                <div class="terminal-content" id="terminalContent"></div>
+                <input type="text" class="terminal-input" id="terminalInput" placeholder="$ " />
+            </div>
+        </div>
+    </div>
+    
+    <div class="status-bar">
+        <div class="status-info">
+            <span id="cursorPosition">Ln 1, Col 1</span>
+            <span id="languageMode">HTML</span>
+            <span>UTF-8</span>
+        </div>
+        <div>
+            <span>Multi-curseur: Alt+Click | Emmet: Tab</span>
+        </div>
+    </div>
+    
+    <div class="git-panel" id="gitPanel">
+        <div class="git-header">
+            <h2 style="font-size: 16px;">Contrôle de Version</h2>
+            <span style="cursor: pointer; font-size: 20px;" onclick="toggleGit()">✕</span>
+        </div>
+        <div class="git-content">
+            <div class="git-section">
+                <h3>Branche actuelle: main</h3>
+            </div>
+            <div class="git-section">
+                <h3>Modifications</h3>
+                <div class="git-file modified">M index.html</div>
+                <div class="git-file added">A script.js</div>
+                <div class="git-file deleted">D old.css</div>
+            </div>
+            <div class="git-section">
+                <h3>Historique</h3>
+                <div class="git-file">Initial commit</div>
+                <div class="git-file">Add responsive design</div>
+                <div class="git-file">Fix bug in navigation</div>
+            </div>
+        </div>
+        <div class="git-actions">
+            <button class="git-btn">Commit</button>
+            <button class="git-btn">Push</button>
+            <button class="git-btn">Pull</button>
+        </div>
+    </div>
+    
+    <div class="search-panel" id="searchPanel">
+        <input type="text" class="search-input" placeholder="Rechercher dans le projet..." id="searchInput" />
+        <div class="search-results" id="searchResults"></div>
+    </div>
+    
+    <div class="theme-selector" id="themeSelector">
+        <div class="theme-option" onclick="changeTheme('vs-dark')">🌙 Dark (défaut)</div>
+        <div class="theme-option" onclick="changeTheme('vs')">☀️ Light</div>
+        <div class="theme-option" onclick="changeTheme('hc-black')">⚡ High Contrast</div>
+        <div class="theme-option" onclick="changeTheme('scarlet-protocol')">🔴 SCARLET Protocol (Beta)</div>
+        <div class="theme-option" onclick="changeTheme('cyberpunk')">🌃 Cyberpunk</div>
+        <div class="theme-option" onclick="changeTheme('cyberpunk-2077')">🎮 Cyberpunk 2077</div>
+        <div class="theme-option" onclick="changeTheme('neon-genesis')">💜 Neon Genesis</div>
+    </div>
+    
+    <div class="emmet-hint" id="emmetHint"></div>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+    <script>
+        // Configuration Monaco Editor
+        require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }});
+        
+        let editor;
+        let currentFile = 'index.html';
+        let openTabs = [];
+        let files = {
+            'index.html': {
+                content: '<!DOCTYPE html>\n<html>\n<head>\n    <title>Mon App</title>\n</head>\n<body>\n    <h1>Bienvenue!</h1>\n    <!-- Tapez ul>li*5 puis Tab pour créer 5 éléments li -->\n</body>\n</html>',
+                language: 'html'
+            },
+            'style.css': {
+                content: 'body {\n    font-family: Arial, sans-serif;\n    margin: 0;\n    padding: 20px;\n}\n\nh1 {\n    color: #333;\n}',
+                language: 'css'
+            },
+            'script.js': {
+                content: '// Application JavaScript\n// Alt+Click pour multi-curseur\nconst app = {\n    init() {\n        console.log("App initialized");\n    }\n};\n\napp.init();',
+                language: 'javascript'
+            },
+            'app.tsx': {
+                content: 'import React from "react";\n\ninterface Props {\n    name: string;\n}\n\nconst App: React.FC<Props> = ({ name }) => {\n    return <h1>Hello, {name}!</h1>;\n};\n\nexport default App;',
+                language: 'typescript'
+            },
+            'config.json': {
+                content: '{\n    "name": "mobile-editor",\n    "version": "1.0.0",\n    "description": "Mobile code editor"\n}',
+                language: 'json'
+            },
+            'server.php': {
+                content: '<?php\n// Serveur PHP\n$app = new Application();\n\n$app->get("/", function($req, $res) {\n    $res->send("Hello World!");\n});\n\n$app->listen(3000);',
+                language: 'php'
+            }
+        };
+        
+        // Définition des thèmes personnalisés
+        const customThemes = {
+            'scarlet-protocol': {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '8B0000' },
+                    { token: 'keyword', foreground: 'FF0000' },
+                    { token: 'string', foreground: 'DC143C' },
+                    { token: 'number', foreground: 'FF6347' },
+                    { token: 'variable', foreground: 'FF1493' },
+                    { token: 'function', foreground: 'FF69B4' },
+                    { token: 'type', foreground: 'B22222' }
+                ],
+                colors: {
+                    'editor.background': '#1a0000',
+                    'editor.foreground': '#FFB6C1',
+                    'editor.lineHighlightBackground': '#330000',
+                    'editor.selectionBackground': '#660000',
+                    'editorCursor.foreground': '#FF0000',
+                    'editorLineNumber.foreground': '#8B0000'
+                }
+            },
+            'cyberpunk': {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '00CED1' },
+                    { token: 'keyword', foreground: 'FF1493' },
+                    { token: 'string', foreground: '00FF00' },
+                    { token: 'number', foreground: 'FFD700' },
+                    { token: 'variable', foreground: 'FF00FF' },
+                    { token: 'function', foreground: '00FFFF' },
+                    { token: 'type', foreground: 'FF69B4' }
+                ],
+                colors: {
+                    'editor.background': '#0a0a0a',
+                    'editor.foreground': '#00FF00',
+                    'editor.lineHighlightBackground': '#1a1a1a',
+                    'editor.selectionBackground': '#FF149344',
+                    'editorCursor.foreground': '#00FFFF',
+                    'editorLineNumber.foreground': '#FF1493'
+                }
+            },
+            'cyberpunk-2077': {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: 'FFFF00' },
+                    { token: 'keyword', foreground: 'FF0080' },
+                    { token: 'string', foreground: '00FFFF' },
+                    { token: 'number', foreground: 'FFFF00' },
+                    { token: 'variable', foreground: 'FF00FF' },
+                    { token: 'function', foreground: '00FF00' },
+                    { token: 'type', foreground: 'FF0080' }
+                ],
+                colors: {
+                    'editor.background': '#0F0F0F',
+                    'editor.foreground': '#F0F0F0',
+                    'editor.lineHighlightBackground': '#1F1F1F',
+                    'editor.selectionBackground': '#FF008044',
+                    'editorCursor.foreground': '#FFFF00',
+                    'editorLineNumber.foreground': '#FF0080',
+                    'editorGutter.background': '#0A0A0A'
+                }
+            },
+            'neon-genesis': {
+                base: 'vs-dark',
+                inherit: true,
+                rules: [
+                    { token: 'comment', foreground: '9370DB' },
+                    { token: 'keyword', foreground: 'FF00FF' },
+                    { token: 'string', foreground: '00CED1' },
+                    { token: 'number', foreground: 'FF1493' },
+                    { token: 'variable', foreground: 'DA70D6' },
+                    { token: 'function', foreground: 'FF69B4' },
+                    { token: 'type', foreground: 'EE82EE' }
+                ],
+                colors: {
+                    'editor.background': '#0a0015',
+                    'editor.foreground': '#E6E6FA',
+                    'editor.lineHighlightBackground': '#1a0025',
+                    'editor.selectionBackground': '#9370DB44',
+                    'editorCursor.foreground': '#FF00FF',
+                    'editorLineNumber.foreground': '#9370DB',
+                    'editorGutter.background': '#050010'
+                }
+            }
+        };
+        
+        // Initialisation de l'éditeur
+        require(['vs/editor/editor.main'], function() {
+            // Enregistrer les thèmes personnalisés
+            Object.entries(customThemes).forEach(([name, theme]) => {
+                monaco.editor.defineTheme(name, theme);
+            });
+            
+            // Configuration Emmet
+            monaco.languages.registerCompletionItemProvider('html', {
+                provideCompletionItems: function(model, position) {
+                    const textUntilPosition = model.getValueInRange({
+                        startLineNumber: position.lineNumber,
+                        startColumn: 1,
+                        endLineNumber: position.lineNumber,
+                        endColumn: position.column
+                    });
+                    
+                    const match = textUntilPosition.match(/(\w+[\w\-]*(?:[>+]\w+[\w\-]*)*(?:\*\d+)?(?:\[[\w\-]+(?:=["']?[\w\s]+["']?)?\])*(?:\{[^}]+\})?(?:#[\w\-]+)?(?:\.[\w\-]+)*)$/);
+                    
+                    if (!match) return { suggestions: [] };
+                    
+                    const emmetExpression = match[1];
+                    const expandedHtml = expandEmmet(emmetExpression);
+                    
+                    if (!expandedHtml) return { suggestions: [] };
+                    
+                    return {
+                        suggestions: [{
+                            label: emmetExpression,
+                            kind: monaco.languages.CompletionItemKind.Snippet,
+                            insertText: expandedHtml,
+                            insertTextRules: monaco.languages.CompletionItemInsertTextRule.InsertAsSnippet,
+                            detail: 'Emmet Abbreviation',
+                            documentation: expandedHtml,
+                            range: {
+                                startLineNumber: position.lineNumber,
+                                endLineNumber: position.lineNumber,
+                                startColumn: position.column - emmetExpression.length,
+                                endColumn: position.column
+                            }
+                        }]
+                    };
+                },
+                triggerCharacters: ['>', '*', '+', '.', '#', '[', '{']
+            });
+            
+            editor = monaco.editor.create(document.getElementById('editor'), {
+                value: files[currentFile].content,
+                language: files[currentFile].language,
+                theme: 'vs-dark',
+                minimap: { enabled: false },
+                fontSize: 14,
+                wordWrap: 'on',
+                automaticLayout: true,
+                scrollBeyondLastLine: false,
+                quickSuggestions: true,
+                parameterHints: { enabled: true },
+                suggestOnTriggerCharacters: true,
+                tabSize: 2,
+                insertSpaces: true,
+                formatOnPaste: true,
+                formatOnType: true,
+                multiCursorModifier: 'alt',
+                mouseWheelZoom: true,
+                cursorBlinking: 'smooth',
+                smoothScrolling: true,
+                renderWhitespace: 'selection',
+                renderLineHighlight: 'all'
+            });
+            
+            // Gestion du multi-curseur
+            editor.onMouseDown((e) => {
+                if (e.event.altKey) {
+                    e.event.preventDefault();
+                    e.event.stopPropagation();
+                }
+            });
+            
+            // Mise à jour de la position du curseur
+            editor.onDidChangeCursorPosition((e) => {
+                const position = e.position;
+                document.getElementById('cursorPosition').textContent = `Ln ${position.lineNumber}, Col ${position.column}`;
+            });
+            
+            // Sauvegarde automatique
+            editor.onDidChangeModelContent(() => {
+                if (files[currentFile]) {
+                    files[currentFile].content = editor.getValue();
+                }
+            });
+            
+            // Configuration mobile
+            if (window.innerWidth < 768) {
+                editor.updateOptions({ fontSize: 12 });
+            }
+            
+            // Raccourci Tab pour Emmet
+            editor.addCommand(monaco.KeyCode.Tab, () => {
+                const position = editor.getPosition();
+                const model = editor.getModel();
+                const textBeforeCursor = model.getValueInRange({
+                    startLineNumber: position.lineNumber,
+                    startColumn: 1,
+                    endLineNumber: position.lineNumber,
+                    endColumn: position.column
+                });
+                
+                const emmetMatch = textBeforeCursor.match(/(\w+[\w\-]*(?:[>+]\w+[\w\-]*)*(?:\*\d+)?(?:\[[\w\-]+(?:=["']?[\w\s]+["']?)?\])*(?:\{[^}]+\})?(?:#[\w\-]+)?(?:\.[\w\-]+)*)$/);
+                
+                if (emmetMatch) {
+                    const emmetExpression = emmetMatch[1];
+                    const expandedHtml = expandEmmet(emmetExpression);
+                    
+                    if (expandedHtml) {
+                        const range = new monaco.Range(
+                            position.lineNumber,
+                            position.column - emmetExpression.length,
+                            position.lineNumber,
+                            position.column
+                        );
+                        
+                        editor.executeEdits('emmet', [{
+                            range: range,
+                            text: expandedHtml,
+                            forceMoveMarkers: true
+                        }]);
+                        
+                        showEmmetHint(`Emmet: ${emmetExpression} → Expansé!`);
+                        return;
+                    }
+                }
+                
+                // Comportement Tab normal
+                editor.trigger('keyboard', 'type', { text: '\t' });
+            });
+        });
+        
+        // Fonction d'expansion Emmet simplifiée
+        function expandEmmet(abbreviation) {
+            // Parse multiplication
+            const multiplyMatch = abbreviation.match(/^(.+)\*(\d+)$/);
+            let baseAbbr = abbreviation;
+            let count = 1;
+            
+            if (multiplyMatch) {
+                baseAbbr = multiplyMatch[1];
+                count = parseInt(multiplyMatch[2]);
+            }
+            
+            // Parse basic tag
+            const tagMatch = baseAbbr.match(/^(\w+)/);
+            if (!tagMatch) return null;
+            
+            const tag = tagMatch[1];
+            let result = '';
+            
+            for (let i = 0; i < count; i++) {
+                result += `<${tag}></${tag}>\n`;
+            }
+            
+            return result.trim();
+        }
+        
+        function showEmmetHint(message) {
+            const hint = document.getElementById('emmetHint');
+            hint.textContent = message;
+            hint.style.display = 'block';
+            setTimeout(() => {
+                hint.style.display = 'none';
+            }, 2000);
+        }
+        
+        // Gestion des onglets
+        function updateTabs() {
+            const tabsContainer = document.getElementById('tabs');
+            tabsContainer.innerHTML = '';
+            
+            openTabs.forEach(tab => {
+                const tabEl = document.createElement('div');
+                tabEl.className = 'tab' + (tab === currentFile ? ' active' : '');
+                tabEl.innerHTML = `
+                    <span onclick="switchFile('${tab}')">${tab}</span>
+                    <span class="tab-close" onclick="closeTab('${tab}')">&times;</span>
+                `;
+                tabsContainer.appendChild(tabEl);
+            });
+        }
+        
+        function openFile(filename) {
+            if (!openTabs.includes(filename)) {
+                openTabs.push(filename);
+            }
+            switchFile(filename);
+        }
+        
+        function switchFile(filename) {
+            if (files[filename]) {
+                currentFile = filename;
+                editor.setValue(files[filename].content);
+                monaco.editor.setModelLanguage(editor.getModel(), files[filename].language);
+                document.getElementById('languageMode').textContent = files[filename].language.toUpperCase();
+                updateTabs();
+                updateFileTree();
+            }
+        }
+        
+        function closeTab(filename) {
+            const index = openTabs.indexOf(filename);
+            if (index > -1) {
+                openTabs.splice(index, 1);
+                if (currentFile === filename && openTabs.length > 0) {
+                    switchFile(openTabs[openTabs.length - 1]);
+                }
+                updateTabs();
+            }
+        }
+        
+        // Gestion de l'arborescence
+        function updateFileTree() {
+            const fileTree = document.getElementById('fileTree');
+            fileTree.innerHTML = '';
+            
+            Object.keys(files).forEach(filename => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item' + (filename === currentFile ? ' active' : '');
+                fileItem.textContent = filename;
+                fileItem.onclick = () => openFile(filename);
+                fileTree.appendChild(fileItem);
+            });
+        }
+        
+        // Toggle functions
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('hidden');
+        }
+        
+        function toggleTerminal() {
+            document.getElementById('terminal').classList.toggle('active');
+            editor.layout();
+        }
+        
+        function toggleGit() {
+            document.getElementById('gitPanel').classList.toggle('active');
+        }
+        
+        function toggleSearch() {
+            const panel = document.getElementById('searchPanel');
+            panel.classList.toggle('active');
+            if (panel.classList.contains('active')) {
+                document.getElementById('searchInput').focus();
+            }
+        }
+        
+        function toggleTheme() {
+            document.getElementById('themeSelector').classList.toggle('active');
+        }
+        
+        function changeTheme(theme) {
+            monaco.editor.setTheme(theme);
+            document.getElementById('themeSelector').classList.remove('active');
+            
+            // Adapter les couleurs de l'interface selon le thème
+            if (theme === 'scarlet-protocol') {
+                document.querySelector('.status-bar').style.background = '#8B0000';
+            } else if (theme === 'cyberpunk' || theme === 'cyberpunk-2077') {
+                document.querySelector('.status-bar').style.background = '#FF1493';
+            } else if (theme === 'neon-genesis') {
+                document.querySelector('.status-bar').style.background = '#9370DB';
+            } else {
+                document.querySelector('.status-bar').style.background = '#007acc';
+            }
+        }
+        
+        // Terminal simulé
+        const terminalInput = document.getElementById('terminalInput');
+        const terminalContent = document.getElementById('terminalContent');
+        
+        terminalInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                const command = terminalInput.value;
+                terminalContent.textContent += `$ ${command}\n`;
+                
+                // Simulation de commandes
+                if (command === 'ls') {
+                    terminalContent.textContent += Object.keys(files).join('  ') + '\n';
+                } else if (command === 'pwd') {
+                    terminalContent.textContent += '/home/user/project\n';
+                } else if (command === 'clear') {
+                    terminalContent.textContent = '';
+                } else if (command.startsWith('git')) {
+                    terminalContent.textContent += 'Git command executed\n';
+                } else if (command === 'help') {
+                    terminalContent.textContent += 'Commandes disponibles: ls, pwd, clear, git, help\n';
+                } else {
+                    terminalContent.textContent += `Command not found: ${command}\n`;
+                }
+                
+                terminalInput.value = '';
+                terminalContent.scrollTop = terminalContent.scrollHeight;
+            }
+        });
+        
+        // Recherche
+        const searchInput = document.getElementById('searchInput');
+        const searchResults = document.getElementById('searchResults');
+        
+        searchInput.addEventListener('input', (e) => {
+            const query = e.target.value.toLowerCase();
+            searchResults.innerHTML = '';
+            
+            if (query.length > 0) {
+                Object.entries(files).forEach(([filename, file]) => {
+                    if (filename.toLowerCase().includes(query) || 
+                        file.content.toLowerCase().includes(query)) {
+                        const result = document.createElement('div');
+                        result.className = 'search-result';
+                        result.textContent = filename;
+                        result.onclick = () => {
+                            openFile(filename);
+                            toggleSearch();
+                        };
+                        searchResults.appendChild(result);
+                    }
+                });
+            }
+        });
+        
+        // Fermer les panels en cliquant ailleurs
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.theme-selector') && !e.target.closest('.header-btn')) {
+                document.getElementById('themeSelector').classList.remove('active');
+            }
+        });
+        
+        // Raccourcis clavier
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 's') {
+                    e.preventDefault();
+                    showEmmetHint('Fichier sauvegardé!');
+                } else if (e.key === 'f') {
+                    e.preventDefault();
+                    toggleSearch();
+                }
+            }
+        });
+        
+        // Initialisation
+        openFile('index.html');
+        updateFileTree();
+    </script>
+</body>
+</html>
