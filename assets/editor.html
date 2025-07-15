@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+pas a ca place pour le remettre a sa place et ensuite supprimer les doublons.  <!DOCTYPE html>
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
@@ -14,30 +14,741 @@
         
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-            background: #1e1e1e;
+            background: #0a0a0a;
             color: #fff;
             overflow: hidden;
             height: 100vh;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 1;
+        }
+        
+        /* Circuit Background Animation */
+        .circuit-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            overflow: hidden;
+            opacity: 0.5;
+            background: #0a0a0a;
+            pointer-events: none;
+        }
+        
+        /* Electric Current Animation */
+        .electric-current {
+            position: absolute;
+            width: 3px;
+            height: 3px;
+            background: #ffff00;
+            border-radius: 50%;
+            box-shadow: 
+                0 0 10px #ffff00,
+                0 0 20px #ffff00,
+                0 0 30px #ffff00;
+            animation: moveAlongPath 4s linear infinite;
+            offset-rotate: 0deg;
+        }
+        
+        .circuit-path {
+            position: absolute;
+            stroke: #1a1a1a;
+            stroke-width: 2;
+            fill: none;
+            filter: drop-shadow(0 0 3px rgba(255, 255, 0, 0.3));
+        }
+        
+        .circuit-path-glow {
+            position: absolute;
+            stroke: #ffff00;
+            stroke-width: 3;
+            fill: none;
+            opacity: 0;
+            filter: blur(5px);
+            animation: pathGlow 4s linear infinite;
+        }
+        
+        @keyframes pathGlow {
+            0%, 100% {
+                opacity: 0;
+                stroke-dashoffset: 1000;
+            }
+            50% {
+                opacity: 0.8;
+                stroke-dashoffset: 0;
+            }
+        }
+        
+        .circuit-line {
+            position: absolute;
+            background: #2a2a2a;
+            box-shadow: 
+                0 0 2px rgba(255, 255, 0, 0.2),
+                inset 0 0 2px rgba(255, 255, 0, 0.1);
+        }
+        
+        .circuit-line::after {
+            content: '';
+            position: absolute;
+            width: 20px;
+            height: 100%;
+            background: radial-gradient(ellipse at center, 
+                #ffff00 0%, 
+                rgba(255, 255, 0, 0.8) 40%,
+                transparent 70%);
+            opacity: 0;
+            animation: electricFlow 3s linear infinite;
+            filter: blur(2px);
+            box-shadow: 0 0 15px #ffff00;
+        }
+        
+        .circuit-line.horizontal::after {
+            height: 10px;
+            top: -4px;
+        }
+        
+        .circuit-line.vertical::after {
+            width: 10px;
+            height: 20px;
+            left: -4px;
+        }
+        
+        .circuit-line.horizontal {
+            height: 2px;
+            width: 100px;
+        }
+        
+        .circuit-line.vertical {
+            width: 2px;
+            height: 100px;
+        }
+        
+        .circuit-node {
+            position: absolute;
+            width: 8px;
+            height: 8px;
+            background: #1a1a1a;
+            border: 2px solid #2a2a2a;
+            border-radius: 50%;
+            z-index: 2;
+        }
+        
+        .circuit-node.active {
+            background: #ffff00;
+            box-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00;
+            animation: nodePulse 2s ease-in-out infinite;
+        }
+        
+        .circuit-led {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: #ffff00;
+            border-radius: 50%;
+            opacity: 0.3;
+            animation: ledBlink 1s ease-in-out infinite;
+        }
+        
+        @keyframes moveAlongPath {
+            0% {
+                offset-distance: 0%;
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                offset-distance: 100%;
+                opacity: 0;
+            }
+        }
+        
+        @keyframes electricFlow {
+            0% {
+                transform: translateX(-100%) scaleX(0.3);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateX(500%) scaleX(0.3);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes nodePulse {
+            0%, 100% {
+                transform: scale(1);
+                box-shadow: 0 0 10px #ffff00, 0 0 20px #ffff00;
+            }
+            50% {
+                transform: scale(1.2);
+                box-shadow: 0 0 20px #ffff00, 0 0 40px #ffff00;
+            }
+        }
+        
+        @keyframes ledBlink {
+            0%, 100% {
+                opacity: 0.3;
+            }
+            50% {
+                opacity: 1;
+                box-shadow: 0 0 5px #ffff00;
+            }
+        }
+        
+        /* Effet de scanlines */
+        .circuit-background::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                transparent,
+                transparent 2px,
+                rgba(255, 255, 0, 0.03) 2px,
+                rgba(255, 255, 0, 0.03) 4px
+            );
+            pointer-events: none;
+        }
+        
+        /* Effet de grille */
+        .circuit-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(rgba(255, 255, 0, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 0, 0.05) 1px, transparent 1px);
+            background-size: 50px 50px;
+            animation: gridMove 20s linear infinite;
+        }
+        
+        @keyframes gridMove {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(50px, 50px);
+            }
+        }
+        .mobile-toolbar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(37, 37, 38, 0.98);
+            backdrop-filter: blur(10px);
+            border-top: 1px solid rgba(255, 255, 0, 0.3);
+            display: none;
+            z-index: 1000;
+            padding: 5px;
+            overflow-x: auto;
+            white-space: nowrap;
+        }
+        
+        .mobile-toolbar.active {
+            display: flex;
+            gap: 5px;
+        }
+        
+        .toolbar-btn {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-shadow: 0 0 5px rgba(255, 255, 0, 0.3);
+            flex-shrink: 0;
+        }
+        
+        .toolbar-btn:active {
+            background: rgba(255, 255, 0, 0.3);
+            transform: scale(0.95);
+        }
+        
+        .toolbar-separator {
+            width: 1px;
+            background: rgba(255, 255, 0, 0.3);
+            margin: 0 5px;
+            flex-shrink: 0;
+        }
+        
+        /* Split View pour plusieurs éditeurs */
+        .editor-split-container {
+            display: flex;
+            flex: 1;
+            gap: 2px;
+            background: rgba(255, 255, 0, 0.1);
+            position: relative;
+        }
+        
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(10, 10, 10, 0.8);
+            position: relative;
+            overflow: hidden;
+            min-width: 200px;
+        }
+        
+        /* Resize Handle */
+        .resize-handle {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 4px;
+            background: rgba(255, 255, 0, 0.2);
+            cursor: col-resize;
+            z-index: 10;
+            transition: all 0.2s;
+        }
+        
+        .resize-handle:hover {
+            background: rgba(255, 255, 0, 0.5);
+            width: 6px;
+        }
+        
+        .resize-handle.active {
+            background: #ffff00;
+            width: 6px;
+        }
+        
+        .editor-pane {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background: rgba(10, 10, 10, 0.8);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .editor-pane::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle at 30% 40%, 
+                rgba(255, 255, 0, 0.05) 0%, 
+                transparent 50%);
+            animation: rotateGradient 30s linear infinite;
+            pointer-events: none;
+        }
+        
+        @keyframes rotateGradient {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .editor-pane-header {
+            background: rgba(37, 37, 38, 0.95);
+            padding: 5px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(255, 255, 0, 0.2);
+            font-size: 12px;
+        }
+        
+        .editor-pane-title {
+            color: #ffff00;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 500;
+        }
+        
+        .editor-pane-title::before {
+            content: '📄';
+            font-size: 14px;
+        }
+        
+        .editor-pane[data-theme="cyberpunk"] .editor-pane-title::before {
+            content: '🌃';
+        }
+        
+        .editor-pane[data-theme="cyberpunk-2077"] .editor-pane-title::before {
+            content: '🎮';
+        }
+        
+        .editor-pane[data-theme="scarlet-protocol"] .editor-pane-title::before {
+            content: '🔴';
+        }
+        
+        .editor-pane[data-theme="neon-genesis"] .editor-pane-title::before {
+            content: '💜';
+        }
+        
+        .theme-switcher {
+            background: none;
+            border: none;
+            color: #888;
+            cursor: pointer;
+            font-size: 16px;
+            padding: 2px 6px;
+            border-radius: 3px;
+            transition: all 0.2s;
+        }
+        
+        .theme-switcher:hover {
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+        }
+        
+        /* Editor Background Circuit Effect */
+        .editor-instance {
+            flex: 1;
+            position: relative;
+        }
+        
+        .editor-instance::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(255, 255, 0, 0.02) 50px,
+                    rgba(255, 255, 0, 0.02) 51px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(255, 255, 0, 0.02) 50px,
+                    rgba(255, 255, 0, 0.02) 51px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .editor-instance::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 0, 0.03) 45%,
+                rgba(255, 255, 0, 0.05) 50%,
+                rgba(255, 255, 0, 0.03) 55%,
+                transparent 100%);
+            animation: scanAcross 8s linear infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        @keyframes scanAcross {
+            0% {
+                left: -100%;
+            }
+            100% {
+                left: 100%;
+            }
+        }
+        
+        .monaco-editor {
+            background-color: transparent !important;
+        }
+        
+        .monaco-editor .margin {
+            background-color: transparent !important;
+        }
+        
+        .monaco-editor .monaco-editor-background {
+            background-color: rgba(10, 10, 10, 0.95) !important;
+        }
+        
+        /* Per-editor theme indicators */
+        .editor-pane[data-theme="cyberpunk"] .editor-pane-header {
+            border-bottom-color: #ff1493;
+        }
+        
+        .editor-pane[data-theme="scarlet-protocol"] .editor-pane-header {
+            border-bottom-color: #ff0000;
+        }
+        
+        .editor-pane.active .editor-pane-header {
+            border-bottom: 2px solid #ffff00;
+            box-shadow: 0 2px 10px rgba(255, 255, 0, 0.3);
+        }
+        
+        /* Split View Controls */
+        .split-controls {
+            position: absolute;
+            top: 10px;
+            right: 60px;
+            display: flex;
+            gap: 5px;
+            z-index: 100;
+        }
+        
+        .split-btn {
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid rgba(255, 255, 0, 0.3);
+            color: #ffff00;
+            padding: 4px 8px;
+            border-radius: 3px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+        
+        .split-btn:hover {
+            background: rgba(255, 255, 0, 0.2);
+        }
+        
+        /* Circuit Background Enhancement */
+        .circuit-corner {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            border: 2px solid rgba(255, 255, 0, 0.3);
+            animation: cornerPulse 4s ease-in-out infinite;
+        }
+        
+        @keyframes cornerPulse {
+            0%, 100% {
+                border-color: rgba(255, 255, 0, 0.3);
+                box-shadow: none;
+            }
+            50% {
+                border-color: rgba(255, 255, 0, 0.6);
+                box-shadow: 0 0 15px rgba(255, 255, 0, 0.4);
+            }
+        }
+        
+        .circuit-corner.top-left {
+            top: 20px;
+            left: 20px;
+            border-right: none;
+            border-bottom: none;
+            border-top-left-radius: 10px;
+        }
+        
+        .circuit-corner.top-right {
+            top: 20px;
+            right: 20px;
+            border-left: none;
+            border-bottom: none;
+            border-top-right-radius: 10px;
+        }
+        
+        .circuit-corner.bottom-left {
+            bottom: 20px;
+            left: 20px;
+            border-right: none;
+            border-top: none;
+            border-bottom-left-radius: 10px;
+        }
+        
+        .circuit-corner.bottom-right {
+            bottom: 20px;
+            right: 20px;
+            border-left: none;
+            border-top: none;
+            border-bottom-right-radius: 10px;
+        }
+        
+        .circuit-pulse {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, 
+                rgba(255, 255, 0, 0.1) 0%, 
+                transparent 70%);
+            animation: pulsate 4s ease-in-out infinite;
+        }
+        
+        @keyframes pulsate {
+            0%, 100% {
+                transform: scale(0.8);
+                opacity: 0.3;
+            }
+            50% {
+                transform: scale(1.2);
+                opacity: 0.1;
+            }
+        }
+        
+        /* Hexagon Grid Overlay */
+        .hex-grid {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            opacity: 0.05;
+            background-image: 
+                repeating-linear-gradient(30deg, 
+                    transparent, 
+                    transparent 40px, 
+                    rgba(255, 255, 0, 0.1) 40px, 
+                    rgba(255, 255, 0, 0.1) 41px),
+                repeating-linear-gradient(90deg, 
+                    transparent, 
+                    transparent 40px, 
+                    rgba(255, 255, 0, 0.1) 40px, 
+                    rgba(255, 255, 0, 0.1) 41px),
+                repeating-linear-gradient(150deg, 
+                    transparent, 
+                    transparent 40px, 
+                    rgba(255, 255, 0, 0.1) 40px, 
+                    rgba(255, 255, 0, 0.1) 41px);
+        }
+        
+        /* Editor Background Circuit Effect */
+        .editor-instance::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(255, 255, 0, 0.02) 50px,
+                    rgba(255, 255, 0, 0.02) 51px
+                ),
+                repeating-linear-gradient(
+                    90deg,
+                    transparent,
+                    transparent 50px,
+                    rgba(255, 255, 0, 0.02) 50px,
+                    rgba(255, 255, 0, 0.02) 51px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+        
+        .monaco-editor {
+            background-color: transparent !important;
+        }
+        
+        .monaco-editor .margin {
+            background-color: transparent !important;
+        }
+        
+        .monaco-editor .monaco-editor-background {
+            background-color: rgba(10, 10, 10, 0.95) !important;
+        }
+        .scan-line {
+            position: absolute;
+            width: 100%;
+            height: 2px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                rgba(255, 255, 0, 0.5) 50%, 
+                transparent 100%);
+            top: 0;
+            animation: scanDown 8s linear infinite;
+            filter: blur(1px);
+        }
+        
+        @keyframes scanDown {
+            0% {
+                top: -2px;
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                top: 100%;
+                opacity: 0;
+            }
+        }
+        @keyframes glitch {
+            0%, 100% {
+                transform: translate(0);
+                filter: hue-rotate(0deg);
+            }
+            20% {
+                transform: translate(-1px, 1px);
+                filter: hue-rotate(90deg);
+            }
+            40% {
+                transform: translate(1px, -1px);
+                filter: hue-rotate(180deg);
+            }
+            60% {
+                transform: translate(0, 1px);
+                filter: hue-rotate(270deg);
+            }
+            80% {
+                transform: translate(-1px, 0);
+                filter: hue-rotate(360deg);
+            }
+        }
+        
+        .circuit-background::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255, 255, 0, 0.02);
+            animation: glitch 10s linear infinite;
+            pointer-events: none;
+            mix-blend-mode: screen;
         }
         
         /* Header */
         .header {
-            background: #2d2d30;
+            background: rgba(45, 45, 48, 0.95);
+            backdrop-filter: blur(10px);
             display: flex;
             align-items: center;
             padding: 8px;
             gap: 8px;
             flex-shrink: 0;
-            border-bottom: 1px solid #3e3e42;
+            border-bottom: 1px solid rgba(255, 255, 0, 0.2);
+            position: relative;
+            z-index: 10;
         }
         
         .logo {
             font-size: 18px;
             font-weight: bold;
-            color: #007acc;
+            color: #ffff00;
             margin-right: auto;
+            text-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
         }
         
         .header-btn {
@@ -58,17 +769,23 @@
         }
         
         .header-btn.active {
-            background: #094771;
-            color: #fff;
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+            border: 1px solid rgba(255, 255, 0, 0.4);
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.3);
         }
         
         .header-btn.run-btn {
-            background: #0e639c;
-            color: #fff;
+            background: rgba(255, 255, 0, 0.2);
+            color: #ffff00;
+            border: 1px solid rgba(255, 255, 0, 0.4);
+            text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
         }
         
         .header-btn.run-btn:hover {
-            background: #1177bb;
+            background: rgba(255, 255, 0, 0.3);
+            border-color: #ffff00;
+            box-shadow: 0 0 10px rgba(255, 255, 0, 0.5);
         }
         
         /* Menu Fichier */
@@ -76,10 +793,11 @@
             position: absolute;
             top: 100%;
             left: 0;
-            background: #252526;
-            border: 1px solid #3e3e42;
+            background: rgba(37, 37, 38, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 0, 0.2);
             border-radius: 4px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(255, 255, 0, 0.1);
             display: none;
             z-index: 1000;
             min-width: 220px;
@@ -113,12 +831,15 @@
         
         /* Tabs */
         .tabs-container {
-            background: #252526;
+            background: rgba(37, 37, 38, 0.95);
+            backdrop-filter: blur(10px);
             display: flex;
             overflow-x: auto;
             scrollbar-width: thin;
             flex-shrink: 0;
-            border-bottom: 1px solid #3e3e42;
+            border-bottom: 1px solid rgba(255, 255, 0, 0.1);
+            position: relative;
+            z-index: 10;
         }
         
         .tab {
@@ -158,16 +879,21 @@
             flex: 1;
             display: flex;
             overflow: hidden;
+            position: relative;
+            z-index: 5;
         }
         
         /* Explorer amélioré */
         .explorer {
             width: 250px;
-            background: #252526;
-            border-right: 1px solid #3e3e42;
+            background: rgba(37, 37, 38, 0.95);
+            backdrop-filter: blur(10px);
+            border-right: 1px solid rgba(255, 255, 0, 0.1);
             display: flex;
             flex-direction: column;
             transition: margin-left 0.3s;
+            position: relative;
+            z-index: 10;
         }
         
         .explorer.hidden {
@@ -226,6 +952,7 @@
             transition: background 0.2s;
             gap: 6px;
             user-select: none;
+            white-space: nowrap;
         }
         
         .tree-item:hover {
@@ -249,8 +976,22 @@
             justify-content: center;
         }
         
+        .tree-arrow {
+            width: 12px;
+            height: 12px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: transform 0.2s;
+            cursor: pointer;
+        }
+        
+        .tree-arrow.expanded {
+            transform: rotate(90deg);
+        }
+        
         .tree-children {
-            margin-left: 20px;
             display: none;
         }
         
@@ -258,11 +999,18 @@
             display: block;
         }
         
+        .tree-indent {
+            display: inline-block;
+            width: 20px;
+        }
+        
         /* Editor Container */
         .editor-container {
             flex: 1;
             display: flex;
             flex-direction: column;
+            position: relative;
+            z-index: 5;
         }
         
         .editor-wrapper {
@@ -457,13 +1205,18 @@
         
         /* Status Bar */
         .status-bar {
-            background: #007acc;
-            color: #fff;
+            background: rgba(255, 255, 0, 0.1);
+            border-top: 1px solid rgba(255, 255, 0, 0.3);
+            color: #ffff00;
             padding: 4px 12px;
             font-size: 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            backdrop-filter: blur(10px);
+            position: relative;
+            z-index: 10;
+            text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
         }
         
         .status-info {
@@ -476,22 +1229,31 @@
             position: fixed;
             bottom: 60px;
             right: 20px;
-            background: rgba(0, 122, 204, 0.9);
-            color: #fff;
+            background: rgba(255, 255, 0, 0.1);
+            border: 1px solid rgba(255, 255, 0, 0.4);
+            color: #ffff00;
             padding: 12px 20px;
             border-radius: 4px;
             font-size: 13px;
             display: none;
             animation: slideIn 0.3s, slideOut 0.3s 2.7s;
             z-index: 1000;
+            backdrop-filter: blur(10px);
+            text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
         }
         
         .notification.success {
-            background: rgba(73, 156, 84, 0.9);
+            background: rgba(73, 255, 84, 0.1);
+            border-color: rgba(73, 255, 84, 0.4);
+            color: #49ff54;
+            text-shadow: 0 0 5px rgba(73, 255, 84, 0.5);
         }
         
         .notification.error {
-            background: rgba(220, 53, 69, 0.9);
+            background: rgba(255, 53, 69, 0.1);
+            border-color: rgba(255, 53, 69, 0.4);
+            color: #ff3545;
+            text-shadow: 0 0 5px rgba(255, 53, 69, 0.5);
         }
         
         @keyframes slideIn {
@@ -523,21 +1285,25 @@
         .fab {
             width: 56px;
             height: 56px;
-            background: #007acc;
+            background: rgba(255, 255, 0, 0.2);
+            border: 2px solid rgba(255, 255, 0, 0.4);
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #fff;
+            color: #ffff00;
             font-size: 24px;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+            box-shadow: 0 2px 8px rgba(255, 255, 0, 0.3);
             cursor: pointer;
             transition: all 0.3s;
+            text-shadow: 0 0 5px rgba(255, 255, 0, 0.5);
         }
         
         .fab:hover {
             transform: scale(1.1);
-            background: #1177bb;
+            background: rgba(255, 255, 0, 0.3);
+            border-color: #ffff00;
+            box-shadow: 0 0 20px rgba(255, 255, 0, 0.5);
         }
         
         .fab-menu {
@@ -565,7 +1331,7 @@
             background: #37373d;
         }
         
-        /* Mobile Responsive */
+        /* Mobile optimizations */
         @media (max-width: 768px) {
             .explorer {
                 position: fixed;
@@ -582,11 +1348,32 @@
             
             .fab-container {
                 display: flex;
+                bottom: 60px;
             }
             
             .header-btn {
                 padding: 4px 8px;
                 font-size: 12px;
+            }
+            
+            .editor-container {
+                margin-bottom: 50px;
+            }
+            
+            .split-controls {
+                display: none;
+            }
+            
+            .circuit-background {
+                opacity: 0.3;
+            }
+            
+            .help-btn {
+                bottom: 120px;
+            }
+            
+            .mobile-toolbar {
+                -webkit-overflow-scrolling: touch;
             }
         }
         
@@ -668,6 +1455,19 @@
     </style>
 </head>
 <body>
+    <!-- Circuit Background Animation -->
+    <div class="circuit-background" id="circuitBg">
+        <div class="circuit-grid"></div>
+        <div class="hex-grid"></div>
+        <div class="circuit-pulse"></div>
+        <div class="circuit-corner top-left"></div>
+        <div class="circuit-corner top-right"></div>
+        <div class="circuit-corner bottom-left"></div>
+        <div class="circuit-corner bottom-right"></div>
+        <div class="scan-line"></div>
+        <div class="circuit-overlay"></div>
+    </div>
+    
     <div class="header">
         <div class="logo">CodeEdit Pro</div>
         <div style="position: relative;">
@@ -702,7 +1502,7 @@
     <div class="tabs-container" id="tabs"></div>
     
     <div class="main-content">
-        <div class="explorer" id="explorer">
+        <div class="explorer hidden" id="explorer">
             <div class="explorer-header">
                 <span class="explorer-title">Explorateur</span>
                 <div class="explorer-actions">
@@ -715,8 +1515,25 @@
         </div>
         
         <div class="editor-container">
-            <div class="editor-wrapper active" id="editorWrapper">
-                <div id="editor"></div>
+            <div class="split-controls">
+                <button class="split-btn" onclick="toggleSplitView()">⬜ Split</button>
+                <button class="split-btn" onclick="closeSplitView()">✕</button>
+            </div>
+            <div class="editor-split-container" id="editorSplitContainer">
+                <div class="editor-pane active" id="editorPane1" data-theme="vs-dark">
+                    <div class="editor-pane-header">
+                        <div class="editor-pane-title">
+                            <span id="paneTitle1">Éditeur 1</span>
+                        </div>
+                        <button class="theme-switcher" onclick="showPaneThemeMenu(1)">🎨</button>
+                    </div>
+                    <div class="editor-instance" id="editor1Container">
+                        <div id="editor"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="editor-wrapper active" id="editorWrapper" style="display: none;">
+                <div id="editorOld"></div>
             </div>
             
             <div class="preview-container" id="previewContainer">
@@ -801,12 +1618,177 @@
         require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs' }});
         
         let editor;
+        let editor2 = null;
+        let currentEditor = null;
         let currentFile = null;
         let currentFileHandle = null;
         let openTabs = [];
-        let fileSystem = {};
+        let fileSystem = {
+            'Mon Projet': {
+                type: 'folder',
+                expanded: true,
+                children: {
+                    'src': {
+                        type: 'folder',
+                        expanded: false,
+                        children: {
+                            'index.html': {
+                                type: 'file',
+                                    content: ``,
+                                language: 'html'
+                            },
+                            'style.css': {
+                                type: 'file',
+                                content: `body {
+    margin: 0;
+    padding: 0;
+    background: #0a0a0a;
+    color: #fff;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+}
+
+.container {
+    text-align: center;
+    padding: 40px;
+}
+
+.neon-text {
+    font-size: 3em;
+    color: #ffff00;
+    text-shadow: 
+        0 0 10px #ffff00,
+        0 0 20px #ffff00,
+        0 0 30px #ffff00;
+    animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.8; }
+}
+
+.cyber-btn {
+    background: transparent;
+    border: 2px solid #ffff00;
+    color: #ffff00;
+    padding: 15px 40px;
+    font-size: 1.2em;
+    cursor: pointer;
+    transition: all 0.3s;
+    text-transform: uppercase;
+    margin-top: 30px;
+}
+
+.cyber-btn:hover {
+    background: #ffff00;
+    color: #0a0a0a;
+    box-shadow: 0 0 20px #ffff00;
+}`,
+                                language: 'css'
+                            }
+                        }
+                    },
+                    'scripts': {
+                        type: 'folder',
+                        expanded: false,
+                        children: {
+                            'app.js': {
+                                type: 'file',
+                                content: `
+console.log("System initialized...");
+
+
+document.addEventListener('DOMContentLoaded', () => {
+    const btn = document.querySelector('.cyber-btn');
+    
+    btn.addEventListener('click', () => {
+        console.log('Launching cyberdeck...');
+        
+        // Effet de glitch
+        btn.style.animation = 'glitch 0.3s';
+        
+        setTimeout(() => {
+            btn.style.animation = '';
+            alert('Welcome to the Matrix, Samurai!');
+        }, 300);
+    });
+    
+    // Effet de typing sur le titre
+    const title = document.querySelector('.neon-text');
+    const text = title.textContent;
+    title.textContent = '';
+    
+    let i = 0;
+    const typeWriter = setInterval(() => {
+        if (i < text.length) {
+            title.textContent += text.charAt(i);
+            i++;
+        } else {
+            clearInterval(typeWriter);
+        }
+    }, 100);
+});`,
+                                language: 'javascript'
+                            }
+                        }
+                    },
+                    'README.md': {
+                        type: 'file',
+                        content: `# Mon Projet Cyberpunk 2077
+
+## 🎮 Bienvenue dans CodeEdit Pro
+
+Cet éditeur de code mobile est inspiré de l'univers Cyberpunk 2077 avec des animations de circuits électriques.
+
+### 🚀 Fonctionnalités
+
+- **Multi-éditeurs** : Divisez l'écran et codez sur plusieurs fichiers
+- **Thèmes personnalisés** : Chaque éditeur peut avoir son propre thème
+- **Animations cyberpunk** : Circuits animés en arrière-plan
+- **Support mobile** : Toolbar avec raccourcis tactiles
+
+### 📁 Structure du projet
+
+\`\`\`
+Mon Projet/
+├── src/
+│   ├── index.html    # Page principale
+│   └── style.css     # Styles cyberpunk
+├── scripts/
+│   └── app.js        # Logique JavaScript
+└── README.md         # Ce fichier
+\`\`\`
+
+### 💡 Conseils
+
+1. Utilisez **! + Tab** pour créer une structure HTML5
+2. **Ctrl+S** pour télécharger vos fichiers
+3. **Split View** pour coder efficacement
+4. Explorez les différents thèmes cyberpunk
+
+### 🌃 Wake up, Samurai...
+
+We have code to burn! 🔥`,
+                        language: 'markdown'
+                    }
+                }
+            }
+        };
         let isModified = false;
         let currentPath = [];
+        let splitViewActive = false;
+        let editorThemes = {
+            1: 'vs-dark',
+            2: 'cyberpunk-2077'
+        };
+        let activeFiles = {
+            1: null,
+            2: null
+        };
         
         // Détection du support File System Access API
         const supportsFileSystemAccess = 'showOpenFilePicker' in window;
@@ -954,7 +1936,47 @@
             });
             
             editor = monaco.editor.create(document.getElementById('editor'), {
-                value: '// Bienvenue dans CodeEdit Pro!\n// \n// 📝 Raccourcis utiles:\n// • Tapez ! puis Tab pour créer une structure HTML5 complète\n// • Ctrl+S pour sauvegarder\n// • Alt+Click pour multi-curseur\n// \n// 📂 Utilisez Fichier > Ouvrir pour ouvrir vos fichiers\n// ▶️ Cliquez sur Run pour prévisualiser votre HTML\n// 🖼️ Supporté: Images, Vidéos, Audio',
+                value: `// Bienvenue dans CodeEdit Pro - Cyberpunk Edition!
+// 
+// ⚡ NOUVELLES FONCTIONNALITÉS:
+// 
+// 🌊 ANIMATIONS DE FOND:
+// • Circuits électriques animés avec courant jaune
+// • Particules lumineuses traversant l'écran
+// • LEDs clignotantes et nœuds pulsants
+// 
+// 📱 TOOLBAR MOBILE:
+// • Raccourcis: <> * ! div class # ..
+// • Actions: Copier, Coller, Sauvegarder, Run
+// • S'affiche automatiquement sur mobile
+// 
+// 🎨 MULTI-THÈMES PAR ÉDITEUR:
+// • Cliquez sur ⬜ Split pour diviser l'écran
+// • Chaque éditeur peut avoir son propre thème
+// • Redimensionnez en glissant la barre centrale
+// 
+// 📁 EXPLORATEUR AMÉLIORÉ:
+// • Arborescence complète avec dossiers/fichiers
+// • Cliquez sur ▶ pour ouvrir/fermer les dossiers
+// • Double-clic pour ouvrir les fichiers
+// 
+// 💾 SAUVEGARDE:
+// • Ctrl+S télécharge le fichier actuel
+// • Les modifications sont gardées en mémoire
+// 
+// 📝 RACCOURCIS:
+// • ! + Tab = Structure HTML5 complète
+// • li*5 + Tab = 5 éléments <li>
+// • Ctrl+S = Sauvegarder (télécharger)
+// • Ctrl+R = Run preview
+// • Alt+Click = Multi-curseur
+// 
+// 🚀 DÉMARRAGE RAPIDE:
+// 1. Explorez les fichiers d'exemple dans l'explorateur
+// 2. Créez vos propres fichiers avec Fichier > Nouveau
+// 3. Utilisez Split pour coder sur plusieurs fichiers
+// 
+// Wake up, Samurai. We have code to burn.`,
                 language: 'javascript',
                 theme: 'vs-dark',
                 minimap: { enabled: false },
@@ -977,6 +1999,17 @@
                 renderLineHighlight: 'all'
             });
             
+            currentEditor = editor;
+            
+            // Gestion du focus
+            editor.onDidFocusEditorText(() => {
+                currentEditor = editor;
+                document.getElementById('editorPane1').classList.add('active');
+                if (document.getElementById('editorPane2')) {
+                    document.getElementById('editorPane2').classList.remove('active');
+                }
+            });
+            
             // Gestion du multi-curseur
             editor.onMouseDown((e) => {
                 if (e.event.altKey) {
@@ -993,9 +2026,14 @@
             
             // Détection des modifications
             editor.onDidChangeModelContent(() => {
-                if (!isModified) {
+                if (activeFiles[1] && !isModified) {
                     isModified = true;
                     updateFileStatus();
+                    // Sauvegarder le contenu dans le système de fichiers
+                    const filePath = findFileInSystem(activeFiles[1]);
+                    if (filePath) {
+                        filePath.content = editor.getValue();
+                    }
                 }
             });
             
@@ -1071,6 +2109,46 @@
 </head>
 <body>
     $0
+    <!-- Mobile Toolbar -->
+    <div class="mobile-toolbar" id="mobileToolbar">
+        <button class="toolbar-btn" onclick="insertText('<>')"><></button>
+        <button class="toolbar-btn" onclick="insertText('</>')"></></button>
+        <button class="toolbar-btn" onclick="insertText('*')">*</button>
+        <button class="toolbar-btn" onclick="insertText('!')">!</button>
+        <button class="toolbar-btn" onclick="insertText('div')">div</button>
+        <button class="toolbar-btn" onclick="insertText('class=\"\"')">class</button>
+        <button class="toolbar-btn" onclick="insertText('id=\"\"')">id</button>
+        <button class="toolbar-btn" onclick="insertText('#')">#</button>
+        <button class="toolbar-btn" onclick="insertText('.')">..</button>
+        <button class="toolbar-btn" onclick="insertText('{}')">{}</button>
+        <button class="toolbar-btn" onclick="insertText('()')">()</button>
+        <button class="toolbar-btn" onclick="insertText('[]')">[]</button>
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" onclick="selectAll()">⬚</button>
+        <button class="toolbar-btn" onclick="copyText()">📋</button>
+        <button class="toolbar-btn" onclick="pasteText()">📄</button>
+        <button class="toolbar-btn" onclick="cutText()">✂️</button>
+        <button class="toolbar-btn" onclick="undoEdit()">↶</button>
+        <button class="toolbar-btn" onclick="redoEdit()">↷</button>
+        <div class="toolbar-separator"></div>
+        <button class="toolbar-btn" onclick="saveFile()">💾</button>
+        <button class="toolbar-btn" onclick="runProject()">▶️</button>
+        <button class="toolbar-btn" onclick="toggleSplitView()">⬜</button>
+        <button class="toolbar-btn" onclick="formatCode()">{ }</button>
+        <button class="toolbar-btn" onclick="toggleExplorer()">📁</button>
+    </div>
+    
+    <!-- Loading Indicator -->
+    <div class="loading-indicator" id="loadingIndicator">
+        <div>⚡</div>
+        <div>Chargement...</div>
+    </div>
+    
+    <!-- Help Button -->
+    <button class="help-btn" onclick="showHelp()" title="Aide">?</button>
+    
+    <!-- Tooltip -->
+    <div class="tooltip" id="tooltip"></div>
 </body>
 </html>`;
             }
@@ -1167,16 +2245,7 @@
                             handle: fileHandle
                         };
                         
-                        openTab(file.name);
-                        showCodeEditor();
-                        editor.setValue(content);
-                        monaco.editor.setModelLanguage(editor.getModel(), language);
-                        
-                        isModified = false;
-                        updateFileStatus();
-                        updateFileTree();
-                        
-                        showNotification(`Fichier ouvert: ${file.name}`, 'success');
+                        openFileInEditor(file.name, currentEditor === editor2 ? 2 : 1);
                         
                     } else if (fileTypes.image.includes(extension)) {
                         // Image
@@ -1191,8 +2260,19 @@
                         showMediaViewer('audio', URL.createObjectURL(file), file.name);
                         
                     } else {
-                        showNotification('Type de fichier non supporté', 'error');
-                    }
+                        const extension = name.split('.').pop().toLowerCase();
+                        if (fileTypes.code.includes(extension)) {
+                            openFileInEditor(name, currentEditor === editor2 ? 2 : 1);
+                        } else if (file.handle) {
+                            // Ouvrir les médias
+                            file.handle.getFile().then(f => {
+                                const url = URL.createObjectURL(f);
+                                const type = fileTypes.image.includes(extension) ? 'image' : 
+                                             fileTypes.video.includes(extension) ? 'video' : 'audio';
+                                showMediaViewer(type, url, name);
+                            });
+                        }
+                    };
                     
                 } catch (err) {
                     if (err.name !== 'AbortError') {
@@ -1213,26 +2293,15 @@
                 
                 if (fileTypes.code.includes(extension)) {
                     const content = await file.text();
-                    currentFile = file.name;
-                    
                     const language = getLanguageFromExtension(extension);
                     
-                    fileSystem[file.name] = {
+                    addFileToSystem(file.name, {
                         type: 'file',
                         content: content,
                         language: language
-                    };
+                    });
                     
-                    openTab(file.name);
-                    showCodeEditor();
-                    editor.setValue(content);
-                    monaco.editor.setModelLanguage(editor.getModel(), language);
-                    
-                    isModified = false;
-                    updateFileStatus();
-                    updateFileTree();
-                    
-                    showNotification(`Fichier ouvert: ${file.name}`, 'success');
+                    openFileInEditor(file.name, currentEditor === editor2 ? 2 : 1);
                     
                 } else if (fileTypes.image.includes(extension) || 
                           fileTypes.video.includes(extension) || 
@@ -1258,7 +2327,8 @@
                 mediaContent.innerHTML = `<audio src="${url}" controls></audio>`;
             }
             
-            document.getElementById('editorWrapper').classList.remove('active');
+            document.getElementById('editorSplitContainer').style.display = 'none';
+            document.getElementById('editorWrapper').style.display = 'none';
             document.getElementById('previewContainer').classList.remove('active');
             document.getElementById('mediaViewer').classList.add('active');
             
@@ -1268,28 +2338,27 @@
         // Fermer le viewer média
         function closeMediaViewer() {
             document.getElementById('mediaViewer').classList.remove('active');
-            document.getElementById('editorWrapper').classList.add('active');
+            document.getElementById('editorSplitContainer').style.display = 'flex';
         }
         
         // Afficher l'éditeur de code
         function showCodeEditor() {
             document.getElementById('mediaViewer').classList.remove('active');
             document.getElementById('previewContainer').classList.remove('active');
-            document.getElementById('editorWrapper').classList.add('active');
+            document.getElementById('editorSplitContainer').style.display = 'flex';
         }
         
         // Run le projet
         function runProject() {
-            toggleFileMenu();
-            
-            const content = editor.getValue();
+            const activeEditor = currentEditor || editor;
+            const content = activeEditor.getValue();
             const blob = new Blob([content], { type: 'text/html' });
             const url = URL.createObjectURL(blob);
             
             document.getElementById('previewUrl').textContent = currentFile || 'preview.html';
             document.getElementById('previewFrame').src = url;
             
-            document.getElementById('editorWrapper').classList.remove('active');
+            document.getElementById('editorSplitContainer').style.display = 'none';
             document.getElementById('mediaViewer').classList.remove('active');
             document.getElementById('previewContainer').classList.add('active');
             
@@ -1299,92 +2368,68 @@
         // Fermer la preview
         function closePreview() {
             document.getElementById('previewContainer').classList.remove('active');
-            document.getElementById('editorWrapper').classList.add('active');
+            document.getElementById('editorSplitContainer').style.display = 'flex';
         }
         
         // Sauvegarder le fichier
         async function saveFile() {
             toggleFileMenu();
             
-            if (!currentFile) {
+            const activeEditor = currentEditor || editor;
+            const activeFileNum = currentEditor === editor2 ? 2 : 1;
+            const filename = activeFiles[activeFileNum] || currentFile;
+            
+            if (!filename) {
                 saveAsFile();
                 return;
             }
             
-            const content = editor.getValue();
+            const content = activeEditor.getValue();
             
-            if (supportsFileSystemAccess && currentFileHandle) {
-                try {
-                    const writable = await currentFileHandle.createWritable();
-                    await writable.write(content);
-                    await writable.close();
-                    
-                    isModified = false;
-                    updateFileStatus();
-                    
-                    showNotification('Fichier enregistré!', 'success');
-                } catch (err) {
-                    showNotification('Erreur lors de l\'enregistrement', 'error');
-                }
-            } else {
-                // Fallback: télécharger le fichier
-                downloadFile(currentFile, content);
-                isModified = false;
-                updateFileStatus();
-                showNotification('Fichier téléchargé!', 'success');
+            // Mettre à jour le contenu dans le système de fichiers
+            const file = findFileInSystem(filename);
+            if (file) {
+                file.content = content;
             }
+            
+            // Dans l'interface Claude, on télécharge directement le fichier
+            downloadFile(filename, content);
+            
+            isModified = false;
+            updateFileStatus();
+            showNotification(`Fichier téléchargé: ${filename}`, 'success');
         }
         
         // Enregistrer sous
         async function saveAsFile() {
             toggleFileMenu();
             
-            const content = editor.getValue();
+            const activeEditor = currentEditor || editor;
+            const content = activeEditor.getValue();
             
-            if (supportsFileSystemAccess) {
-                try {
-                    const fileHandle = await window.showSaveFilePicker({
-                        suggestedName: currentFile || 'nouveau-fichier.html',
-                        types: [
-                            {
-                                description: 'Fichiers de code',
-                                accept: {
-                                    'text/html': ['.html'],
-                                    'text/css': ['.css'],
-                                    'text/javascript': ['.js'],
-                                    'application/json': ['.json'],
-                                    'text/plain': ['.txt']
-                                }
-                            }
-                        ]
-                    });
-                    
-                    const writable = await fileHandle.createWritable();
-                    await writable.write(content);
-                    await writable.close();
-                    
-                    currentFileHandle = fileHandle;
-                    currentFile = fileHandle.name;
-                    
-                    isModified = false;
-                    updateFileStatus();
-                    
-                    showNotification('Fichier enregistré!', 'success');
-                } catch (err) {
-                    if (err.name !== 'AbortError') {
-                        showNotification('Erreur lors de l\'enregistrement', 'error');
-                    }
-                }
-            } else {
-                // Fallback
-                const filename = prompt('Nom du fichier:', currentFile || 'nouveau-fichier.html');
-                if (filename) {
-                    downloadFile(filename, content);
-                    currentFile = filename;
-                    isModified = false;
-                    updateFileStatus();
-                    showNotification('Fichier téléchargé!', 'success');
-                }
+            const filename = prompt('Nom du fichier:', currentFile || 'nouveau-fichier.html');
+            if (filename) {
+                // Ajouter le fichier au système
+                const extension = filename.split('.').pop();
+                const language = getLanguageFromExtension(extension);
+                
+                fileSystem[filename] = {
+                    type: 'file',
+                    content: content,
+                    language: language
+                };
+                
+                // Télécharger le fichier
+                downloadFile(filename, content);
+                
+                currentFile = filename;
+                const activeFileNum = currentEditor === editor2 ? 2 : 1;
+                activeFiles[activeFileNum] = filename;
+                
+                isModified = false;
+                updateFileStatus();
+                updateFileTree();
+                showNotification(`Fichier téléchargé: ${filename}`, 'success');
             }
         }
         
@@ -1405,28 +2450,17 @@
             
             showDialog('Nouveau fichier', 'nouveau.html', (filename) => {
                 if (filename) {
-                    currentFile = filename;
-                    currentFileHandle = null;
-                    
                     const extension = filename.split('.').pop();
                     const language = getLanguageFromExtension(extension);
                     
-                    fileSystem[filename] = {
+                    // Ajouter à la racine du système de fichiers
+                    addFileToSystem(filename, {
                         type: 'file',
                         content: '',
                         language: language
-                    };
+                    });
                     
-                    openTab(filename);
-                    showCodeEditor();
-                    editor.setValue('');
-                    monaco.editor.setModelLanguage(editor.getModel(), language);
-                    
-                    isModified = false;
-                    updateFileStatus();
-                    updateFileTree();
-                    
-                    showNotification(`Nouveau fichier: ${filename}`, 'success');
+                    openFileInEditor(filename, currentEditor === editor2 ? 2 : 1);
                 }
             });
         }
@@ -1437,15 +2471,27 @@
             
             showDialog('Nouveau dossier', 'nouveau-dossier', (foldername) => {
                 if (foldername) {
-                    fileSystem[foldername] = {
+                    addFileToSystem(foldername, {
                         type: 'folder',
+                        expanded: false,
                         children: {}
-                    };
+                    });
                     
                     updateFileTree();
                     showNotification(`Nouveau dossier: ${foldername}`, 'success');
                 }
             });
+        }
+        
+        function addFileToSystem(name, item) {
+            // Ajouter à la racine du premier dossier
+            const rootFolder = Object.values(fileSystem).find(item => item.type === 'folder');
+            if (rootFolder && rootFolder.children) {
+                rootFolder.children[name] = item;
+            } else {
+                fileSystem[name] = item;
+            }
+            updateFileTree();
         }
         
         // Afficher une boîte de dialogue
@@ -1488,8 +2534,15 @@
             if ('showDirectoryPicker' in window) {
                 try {
                     const dirHandle = await window.showDirectoryPicker();
+                    // Réinitialiser le système de fichiers
                     fileSystem = {};
-                    await loadDirectory(dirHandle, fileSystem);
+                    fileSystem[dirHandle.name] = {
+                        type: 'folder',
+                        expanded: true,
+                        children: {}
+                    };
+                    
+                    await loadDirectory(dirHandle, fileSystem[dirHandle.name].children);
                     updateFileTree();
                     showNotification('Dossier ouvert!', 'success');
                 } catch (err) {
@@ -1527,6 +2580,7 @@
                 } else if (entry.kind === 'directory') {
                     parentObj[entry.name] = {
                         type: 'folder',
+                        expanded: false,
                         children: {}
                     };
                     await loadDirectory(entry, parentObj[entry.name].children);
@@ -1578,9 +2632,10 @@
             openTabs.forEach(tab => {
                 const tabEl = document.createElement('div');
                 tabEl.className = 'tab' + (tab === currentFile ? ' active' : '');
-                const modified = fileSystem[tab] && isModified && tab === currentFile ? '• ' : '';
+                const file = findFileInSystem(tab);
+                const modified = file && isModified && tab === currentFile ? '• ' : '';
                 tabEl.innerHTML = `
-                    <span onclick="switchFile('${tab}')">${modified}${tab}</span>
+                    <span onclick="openFileInEditor('${tab}', 1)">${modified}${tab}</span>
                     <span class="tab-close" onclick="closeTab('${tab}')">&times;</span>
                 `;
                 tabsContainer.appendChild(tabEl);
@@ -1642,65 +2697,125 @@
             }
         }
         
-        // Gestion de l'arborescence
+        // Gestion de l'arborescence améliorée
         function updateFileTree() {
             const fileTree = document.getElementById('fileTree');
             fileTree.innerHTML = '';
             
-            renderTree(fileSystem, fileTree, 0);
+            renderTreeRecursive(fileSystem, fileTree, 0);
         }
         
-        function renderTree(items, container, level) {
+        function renderTreeRecursive(items, container, level) {
             Object.entries(items).forEach(([name, item]) => {
                 const treeItem = document.createElement('div');
                 treeItem.className = 'tree-item';
-                treeItem.style.paddingLeft = `${level * 20 + 8}px`;
+                
+                // Indentation
+                const indent = document.createElement('span');
+                indent.className = 'tree-indent';
+                indent.style.width = `${level * 20}px`;
+                treeItem.appendChild(indent);
                 
                 if (item.type === 'folder') {
-                    treeItem.classList.add('folder');
-                    treeItem.innerHTML = `
-                        <span class="tree-icon">📁</span>
-                        <span>${name}</span>
-                    `;
-                    
-                    const childrenContainer = document.createElement('div');
-                    childrenContainer.className = 'tree-children';
-                    
-                    treeItem.onclick = () => {
-                        childrenContainer.classList.toggle('expanded');
-                        treeItem.querySelector('.tree-icon').textContent = 
-                            childrenContainer.classList.contains('expanded') ? '📂' : '📁';
+                    // Flèche pour dossier
+                    const arrow = document.createElement('span');
+                    arrow.className = 'tree-arrow' + (item.expanded ? ' expanded' : '');
+                    arrow.innerHTML = '▶';
+                    arrow.onclick = (e) => {
+                        e.stopPropagation();
+                        item.expanded = !item.expanded;
+                        updateFileTree();
                     };
+                    treeItem.appendChild(arrow);
+                    
+                    // Icône et nom du dossier
+                    treeItem.classList.add('folder');
+                    const icon = document.createElement('span');
+                    icon.className = 'tree-icon';
+                    icon.textContent = item.expanded ? '📂' : '📁';
+                    treeItem.appendChild(icon);
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = name;
+                    treeItem.appendChild(nameSpan);
                     
                     container.appendChild(treeItem);
-                    container.appendChild(childrenContainer);
                     
-                    if (item.children) {
-                        renderTree(item.children, childrenContainer, level + 1);
+                    // Enfants du dossier
+                    if (item.children && item.expanded) {
+                        const childrenContainer = document.createElement('div');
+                        childrenContainer.className = 'tree-children expanded';
+                        container.appendChild(childrenContainer);
+                        renderTreeRecursive(item.children, childrenContainer, level + 1);
                     }
                 } else {
-                    const icon = getFileIcon(name);
-                    treeItem.innerHTML = `
-                        <span class="tree-icon">${icon}</span>
-                        <span>${name}</span>
-                    `;
+                    // Fichier
+                    const spacer = document.createElement('span');
+                    spacer.style.width = '16px';
+                    spacer.style.display = 'inline-block';
+                    treeItem.appendChild(spacer);
                     
-                    if (name === currentFile) {
+                    const icon = document.createElement('span');
+                    icon.className = 'tree-icon';
+                    icon.textContent = getFileIcon(name);
+                    treeItem.appendChild(icon);
+                    
+                    const nameSpan = document.createElement('span');
+                    nameSpan.textContent = name;
+                    treeItem.appendChild(nameSpan);
+                    
+                    if (name === currentFile || name === activeFiles[1] || name === activeFiles[2]) {
                         treeItem.classList.add('active');
                     }
                     
                     treeItem.onclick = () => {
-                        const extension = name.split('.').pop().toLowerCase();
-                        if (fileTypes.code.includes(extension)) {
-                            openTab(name);
-                        } else {
-                            switchFile(name);
-                        }
+                        openFileInEditor(name, currentEditor === editor2 ? 2 : 1);
                     };
                     
                     container.appendChild(treeItem);
                 }
             });
+        }
+        
+        function findFileInSystem(filename, obj = fileSystem) {
+            for (const [key, value] of Object.entries(obj)) {
+                if (key === filename && value.type === 'file') {
+                    return value;
+                } else if (value.type === 'folder' && value.children) {
+                    const found = findFileInSystem(filename, value.children);
+                    if (found) return found;
+                }
+            }
+            return null;
+        }
+        
+        function openFileInEditor(filename, editorNumber = 1) {
+            const file = findFileInSystem(filename);
+            if (!file) return;
+            
+            const targetEditor = editorNumber === 1 ? editor : editor2;
+            if (!targetEditor) return;
+            
+            // Mettre à jour le fichier actif
+            activeFiles[editorNumber] = filename;
+            currentFile = filename;
+            
+            // Charger le contenu
+            targetEditor.setValue(file.content || '');
+            monaco.editor.setModelLanguage(targetEditor.getModel(), file.language);
+            
+            // Mettre à jour l'UI
+            document.getElementById(`paneTitle${editorNumber}`).textContent = filename;
+            if (!openTabs.includes(filename)) {
+                openTabs.push(filename);
+            }
+            
+            isModified = false;
+            updateTabs();
+            updateFileTree();
+            updateFileStatus();
+            
+            showNotification(`Fichier ouvert: ${filename}`, 'success');
         }
         
         function getFileIcon(filename) {
@@ -1753,16 +2868,8 @@
             monaco.editor.setTheme(theme);
             document.getElementById('themeSelector').classList.remove('active');
             
-            // Adapter les couleurs de l'interface selon le thème
-            if (theme === 'scarlet-protocol') {
-                document.querySelector('.status-bar').style.background = '#8B0000';
-            } else if (theme === 'cyberpunk' || theme === 'cyberpunk-2077') {
-                document.querySelector('.status-bar').style.background = '#FF1493';
-            } else if (theme === 'neon-genesis') {
-                document.querySelector('.status-bar').style.background = '#9370DB';
-            } else {
-                document.querySelector('.status-bar').style.background = '#007acc';
-            }
+            // Les thèmes gardent maintenant le style cyberpunk de la barre de statut
+            // pour une cohérence avec l'animation de fond
         }
         
         // Recherche
@@ -1774,23 +2881,26 @@
             searchResults.innerHTML = '';
             
             if (query.length > 0) {
-                searchFiles(fileSystem, query, searchResults);
+                searchFilesRecursive(fileSystem, query, searchResults);
             }
         });
         
-        function searchFiles(items, query, container) {
+        function searchFilesRecursive(items, query, container) {
             Object.entries(items).forEach(([name, item]) => {
-                if (item.type === 'file' && name.toLowerCase().includes(query)) {
-                    const result = document.createElement('div');
-                    result.className = 'search-result';
-                    result.textContent = name;
-                    result.onclick = () => {
-                        openTab(name);
-                        toggleSearch();
-                    };
-                    container.appendChild(result);
+                if (item.type === 'file') {
+                    if (name.toLowerCase().includes(query) || 
+                        (item.content && item.content.toLowerCase().includes(query))) {
+                        const result = document.createElement('div');
+                        result.className = 'search-result';
+                        result.textContent = name;
+                        result.onclick = () => {
+                            openFileInEditor(name, currentEditor === editor2 ? 2 : 1);
+                            toggleSearch();
+                        };
+                        container.appendChild(result);
+                    }
                 } else if (item.type === 'folder' && item.children) {
-                    searchFiles(item.children, query, container);
+                    searchFilesRecursive(item.children, query, container);
                 }
             });
         }
@@ -1800,7 +2910,13 @@
             document.getElementById('fabMenu').classList.toggle('active');
         }
         
-        // Raccourcis clavier
+        // Gestion améliorée des erreurs
+        window.addEventListener('error', (e) => {
+            console.error('Erreur:', e);
+            showNotification('Une erreur est survenue. Vérifiez la console.', 'error');
+        });
+        
+        // Raccourcis clavier améliorés
         document.addEventListener('keydown', (e) => {
             if (e.ctrlKey || e.metaKey) {
                 if (e.key === 's') {
@@ -1821,18 +2937,703 @@
                 } else if (e.key === 'r') {
                     e.preventDefault();
                     runProject();
+                } else if (e.key === 'b') {
+                    e.preventDefault();
+                    toggleExplorer();
                 }
             }
         });
         
+        // Mobile Toolbar Functions
+        function insertText(text) {
+            if (currentEditor) {
+                const selection = currentEditor.getSelection();
+                const id = { major: 1, minor: 1 };
+                const op = {
+                    identifier: id,
+                    range: selection,
+                    text: text,
+                    forceMoveMarkers: true
+                };
+                currentEditor.executeEdits("insert", [op]);
+                
+                // Pour les tags avec attributs, positionner le curseur
+                if (text.includes('""')) {
+                    const position = currentEditor.getPosition();
+                    currentEditor.setPosition({
+                        lineNumber: position.lineNumber,
+                        column: position.column - 1
+                    });
+                }
+                currentEditor.focus();
+            }
+        }
+        
+        function undoEdit() {
+            if (currentEditor) {
+                currentEditor.trigger('keyboard', 'undo', null);
+                currentEditor.focus();
+            }
+        }
+        
+        function redoEdit() {
+            if (currentEditor) {
+                currentEditor.trigger('keyboard', 'redo', null);
+                currentEditor.focus();
+            }
+        }
+        
+        function selectAll() {
+            if (currentEditor) {
+                const model = currentEditor.getModel();
+                currentEditor.setSelection(new monaco.Range(1, 1, model.getLineCount(), model.getLineMaxColumn(model.getLineCount())));
+                currentEditor.focus();
+            }
+        }
+        
+        function copyText() {
+            if (currentEditor) {
+                currentEditor.focus();
+                document.execCommand('copy');
+                showNotification('Copié!', 'success');
+            }
+        }
+        
+        function pasteText() {
+            if (currentEditor) {
+                currentEditor.focus();
+                document.execCommand('paste');
+            }
+        }
+        
+        function cutText() {
+            if (currentEditor) {
+                currentEditor.focus();
+                document.execCommand('cut');
+            }
+        }
+        
+        function formatCode() {
+            if (currentEditor) {
+                currentEditor.getAction('editor.action.formatDocument').run();
+                showNotification('Code formaté!', 'success');
+            }
+        }
+        
+        // Split View Functions
+        function toggleSplitView() {
+            if (!splitViewActive) {
+                createSplitView();
+            } else {
+                closeSplitView();
+            }
+        }
+        
+        function createSplitView() {
+            if (splitViewActive) return;
+            
+            const container = document.getElementById('editorSplitContainer');
+            
+            // Créer le handle de redimensionnement
+            const resizeHandle = document.createElement('div');
+            resizeHandle.className = 'resize-handle';
+            resizeHandle.style.left = '50%';
+            resizeHandle.style.transform = 'translateX(-50%)';
+            
+            // Créer le deuxième panneau
+            const pane2 = document.createElement('div');
+            pane2.className = 'editor-pane';
+            pane2.id = 'editorPane2';
+            pane2.setAttribute('data-theme', 'cyberpunk-2077');
+            pane2.innerHTML = `
+                <div class="editor-pane-header">
+                    <div class="editor-pane-title">
+                        <span id="paneTitle2">Éditeur 2</span>
+                    </div>
+                    <button class="theme-switcher" onclick="showPaneThemeMenu(2)">🎨</button>
+                </div>
+                <div class="editor-instance" id="editor2Container"></div>
+            `;
+            
+            container.appendChild(resizeHandle);
+            container.appendChild(pane2);
+            
+            // Créer le deuxième éditeur
+            editor2 = monaco.editor.create(document.getElementById('editor2Container'), {
+                value: '// Sélectionnez un fichier dans l\'explorateur',
+                language: 'javascript',
+                theme: 'cyberpunk-2077',
+                minimap: { enabled: false },
+                fontSize: 14,
+                wordWrap: 'on',
+                automaticLayout: true,
+                scrollBeyondLastLine: false
+            });
+            
+            // Gestion du focus pour mobile
+            if (window.innerWidth <= 768) {
+                editor2.onDidFocusEditorText(() => {
+                    currentEditor = editor2;
+                    document.getElementById('mobileToolbar').classList.add('active');
+                    document.body.classList.add('mobile-keyboard-active');
+                    document.getElementById('editorPane1').classList.remove('active');
+                    document.getElementById('editorPane2').classList.add('active');
+                });
+                
+                editor2.onDidBlurEditorText(() => {
+                    setTimeout(() => {
+                        if (currentEditor !== editor) {
+                            document.getElementById('mobileToolbar').classList.remove('active');
+                            document.body.classList.remove('mobile-keyboard-active');
+                        }
+                    }, 200);
+                });
+            } else {
+                editor2.onDidFocusEditorText(() => {
+                    currentEditor = editor2;
+                    document.getElementById('editorPane1').classList.remove('active');
+                    document.getElementById('editorPane2').classList.add('active');
+                });
+            }
+            
+            // Gestion des modifications pour editor2
+            if (editor2) {
+                editor2.onDidChangeModelContent(() => {
+                    if (activeFiles[2] && !isModified) {
+                        isModified = true;
+                        updateFileStatus();
+                        // Sauvegarder le contenu
+                        const filePath = findFileInSystem(activeFiles[2]);
+                        if (filePath) {
+                            filePath.content = editor2.getValue();
+                        }
+                    }
+                });
+            }
+            
+            // Gestion du redimensionnement
+            let isResizing = false;
+            let startX = 0;
+            let startWidthLeft = 0;
+            let startWidthRight = 0;
+            
+            resizeHandle.addEventListener('mousedown', (e) => {
+                isResizing = true;
+                startX = e.clientX;
+                const pane1 = document.getElementById('editorPane1');
+                const pane2 = document.getElementById('editorPane2');
+                startWidthLeft = pane1.offsetWidth;
+                startWidthRight = pane2.offsetWidth;
+                resizeHandle.classList.add('active');
+                document.body.style.cursor = 'col-resize';
+            });
+            
+            document.addEventListener('mousemove', (e) => {
+                if (!isResizing) return;
+                
+                const deltaX = e.clientX - startX;
+                const container = document.getElementById('editorSplitContainer');
+                const containerWidth = container.offsetWidth;
+                
+                const newWidthLeft = startWidthLeft + deltaX;
+                const newWidthRight = startWidthRight - deltaX;
+                
+                if (newWidthLeft > 200 && newWidthRight > 200) {
+                    const percentLeft = (newWidthLeft / containerWidth) * 100;
+                    const percentRight = (newWidthRight / containerWidth) * 100;
+                    
+                    document.getElementById('editorPane1').style.flex = `0 0 ${percentLeft}%`;
+                    document.getElementById('editorPane2').style.flex = `0 0 ${percentRight}%`;
+                    resizeHandle.style.left = `${percentLeft}%`;
+                    
+                    // Redimensionner les éditeurs
+                    editor.layout();
+                    editor2.layout();
+                }
+            });
+            
+            document.addEventListener('mouseup', () => {
+                if (isResizing) {
+                    isResizing = false;
+                    resizeHandle.classList.remove('active');
+                    document.body.style.cursor = '';
+                }
+            });
+            
+            splitViewActive = true;
+            
+            // Redimensionner les éditeurs
+            setTimeout(() => {
+                editor.layout();
+                editor2.layout();
+            }, 100);
+            
+            showNotification('Vue divisée activée! Glissez la barre centrale pour redimensionner.', 'success');
+        }
+        
+        function closeSplitView() {
+            if (!splitViewActive) return;
+            
+            const pane2 = document.getElementById('editorPane2');
+            const resizeHandle = document.querySelector('.resize-handle');
+            
+            if (pane2) pane2.remove();
+            if (resizeHandle) resizeHandle.remove();
+            
+            if (editor2) {
+                editor2.dispose();
+                editor2 = null;
+            }
+            
+            // Réinitialiser la taille du premier panneau
+            document.getElementById('editorPane1').style.flex = '1';
+            
+            splitViewActive = false;
+            currentEditor = editor;
+            activeFiles[2] = null;
+            
+            setTimeout(() => {
+                editor.layout();
+            }, 100);
+            
+            showNotification('Vue divisée fermée!', 'success');
+        }
+        
+        function showPaneThemeMenu(paneNumber) {
+            const themes = [
+                { name: 'Dark', value: 'vs-dark' },
+                { name: 'Light', value: 'vs' },
+                { name: 'SCARLET Protocol', value: 'scarlet-protocol' },
+                { name: 'Cyberpunk', value: 'cyberpunk' },
+                { name: 'Cyberpunk 2077', value: 'cyberpunk-2077' },
+                { name: 'Neon Genesis', value: 'neon-genesis' }
+            ];
+            
+            const menu = document.createElement('div');
+            menu.className = 'theme-selector';
+            menu.style.position = 'absolute';
+            menu.style.top = '30px';
+            menu.style.right = '10px';
+            menu.style.display = 'block';
+            menu.style.zIndex = '1000';
+            
+            themes.forEach(theme => {
+                const option = document.createElement('div');
+                option.className = 'theme-option';
+                option.textContent = theme.name;
+                option.onclick = () => {
+                    changePaneTheme(paneNumber, theme.value);
+                    menu.remove();
+                };
+                menu.appendChild(option);
+            });
+            
+            document.getElementById(`editorPane${paneNumber}`).appendChild(menu);
+            
+            // Fermer le menu si on clique ailleurs
+            setTimeout(() => {
+                document.addEventListener('click', function closeMenu(e) {
+                    if (!e.target.closest('.theme-selector')) {
+                        menu.remove();
+                        document.removeEventListener('click', closeMenu);
+                    }
+                });
+            }, 100);
+        }
+        
+        function changePaneTheme(paneNumber, theme) {
+            const targetEditor = paneNumber === 1 ? editor : editor2;
+            if (targetEditor) {
+                targetEditor.updateOptions({ theme: theme });
+                document.getElementById(`editorPane${paneNumber}`).setAttribute('data-theme', theme);
+                editorThemes[paneNumber] = theme;
+                showNotification(`Thème ${theme} appliqué à l'éditeur ${paneNumber}!`, 'success');
+            }
+        }
+        
+        // Détecter le focus sur mobile pour afficher la toolbar
+        function setupMobileToolbar() {
+            if (window.innerWidth <= 768) {
+                // Écouter le focus sur les éditeurs
+                editor.onDidFocusEditorText(() => {
+                    currentEditor = editor;
+                    document.getElementById('mobileToolbar').classList.add('active');
+                    document.body.classList.add('mobile-keyboard-active');
+                });
+                
+                editor.onDidBlurEditorText(() => {
+                    setTimeout(() => {
+                        if (currentEditor !== editor2) {
+                            document.getElementById('mobileToolbar').classList.remove('active');
+                            document.body.classList.remove('mobile-keyboard-active');
+                        }
+                    }, 200);
+                });
+            }
+        }
+        
         // Initialisation
         updateFileTree();
         updateFileStatus();
+        setupMobileToolbar();
+        document.getElementById('editorPane1').classList.add('active');
         
-        // Message de bienvenue
+        // Ouvrir l'explorateur par défaut sur desktop
+        if (window.innerWidth > 768) {
+            document.getElementById('explorer').classList.remove('hidden');
+            document.getElementById('explorerBtn').classList.add('active');
+        }
+        
+        // Ajuster la hauteur de l'éditeur sur mobile
+        if (window.innerWidth <= 768) {
+            const adjustEditorHeight = () => {
+                const toolbar = document.getElementById('mobileToolbar');
+                const editorContainer = document.querySelector('.editor-container');
+                if (toolbar.classList.contains('active')) {
+                    editorContainer.style.marginBottom = '50px';
+                } else {
+                    editorContainer.style.marginBottom = '0';
+                }
+            };
+            
+            setInterval(adjustEditorHeight, 100);
+        }
+        
+        // Génération du circuit de fond
+        generateCircuitBackground();
+        
+        function generateCircuitBackground() {
+            const circuitBg = document.getElementById('circuitBg');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            // Créer des chemins SVG pour les circuits
+            const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+            svg.style.position = 'absolute';
+            svg.style.width = '100%';
+            svg.style.height = '100%';
+            svg.style.top = '0';
+            svg.style.left = '0';
+            
+            // Créer plusieurs chemins de circuit
+            const paths = [
+                `M 50 100 L 200 100 L 200 200 L 400 200 L 400 350`,
+                `M 100 50 L 100 150 L 300 150 L 300 300 L 450 300`,
+                `M ${width-100} 100 L ${width-100} 250 L ${width-300} 250 L ${width-300} 400`,
+                `M 150 ${height-100} L 150 ${height-200} L 350 ${height-200} L 350 ${height-300}`,
+                `M ${width/2} 50 L ${width/2} 150 L ${width/2+100} 150 L ${width/2+100} 250`
+            ];
+            
+            paths.forEach((pathData, index) => {
+                // Chemin de base
+                const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                path.setAttribute('d', pathData);
+                path.setAttribute('class', 'circuit-path');
+                path.setAttribute('id', `path${index}`);
+                svg.appendChild(path);
+                
+                // Chemin lumineux
+                const glowPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+                glowPath.setAttribute('d', pathData);
+                glowPath.setAttribute('class', 'circuit-path-glow');
+                glowPath.setAttribute('stroke-dasharray', '1000');
+                glowPath.style.animationDelay = `${index * 0.8}s`;
+                svg.appendChild(glowPath);
+                
+                // Créer des particules électriques
+                for (let i = 0; i < 3; i++) {
+                    const particle = document.createElement('div');
+                    particle.className = 'electric-current';
+                    particle.style.offsetPath = `path('${pathData}')`;
+                    particle.style.animationDelay = `${index * 0.8 + i * 1.3}s`;
+                    particle.style.animationDuration = `${3 + Math.random() * 2}s`;
+                    circuitBg.appendChild(particle);
+                }
+            });
+            
+            circuitBg.appendChild(svg);
+            
+            // Générer les lignes de circuit classiques
+            for (let i = 0; i < 20; i++) {
+                // Lignes horizontales avec flux électrique
+                const hLine = document.createElement('div');
+                hLine.className = 'circuit-line horizontal';
+                hLine.style.left = Math.random() * (width - 100) + 'px';
+                hLine.style.top = Math.random() * height + 'px';
+                hLine.style.width = (50 + Math.random() * 200) + 'px';
+                hLine.style.animationDelay = (Math.random() * 3) + 's,' + (Math.random() * 3) + 's';
+                
+                const hFlow = document.createElement('div');
+                hFlow.className = 'electric-flow';
+                hFlow.style.animationDelay = Math.random() * 2 + 's';
+                hLine.appendChild(hFlow);
+                
+                circuitBg.appendChild(hLine);
+                
+                // Lignes verticales avec flux électrique
+                const vLine = document.createElement('div');
+                vLine.className = 'circuit-line vertical';
+                vLine.style.left = Math.random() * width + 'px';
+                vLine.style.top = Math.random() * (height - 100) + 'px';
+                vLine.style.height = (50 + Math.random() * 200) + 'px';
+                vLine.style.animationDelay = (Math.random() * 3) + 's,' + (Math.random() * 3) + 's';
+                
+                const vFlow = document.createElement('div');
+                vFlow.className = 'electric-flow';
+                vFlow.style.animationDelay = Math.random() * 2 + 's';
+                vLine.appendChild(vFlow);
+                
+                circuitBg.appendChild(vLine);
+                
+                // Nœuds de connexion actifs
+                if (i % 3 === 0) {
+                    const node = document.createElement('div');
+                    node.className = 'circuit-node active';
+                    node.style.left = hLine.style.left;
+                    node.style.top = hLine.style.top;
+                    node.style.transform = 'translate(-50%, -50%)';
+                    node.style.animationDelay = Math.random() * 2 + 's';
+                    circuitBg.appendChild(node);
+                }
+            }
+            
+            // Générer plus de LEDs clignotantes
+            for (let i = 0; i < 50; i++) {
+                const led = document.createElement('div');
+                led.className = 'circuit-led';
+                led.style.left = Math.random() * width + 'px';
+                led.style.top = Math.random() * height + 'px';
+                led.style.animationDelay = Math.random() * 2 + 's';
+                led.style.animationDuration = (0.5 + Math.random() * 1.5) + 's';
+                circuitBg.appendChild(led);
+            }
+        }
+        
+        function createCircuitPaths() {
+            const circuitBg = document.getElementById('circuitBg');
+            const paths = [
+                // Chemin 1
+                { x: 10, y: 20, segments: [
+                    { dir: 'h', len: 15 },
+                    { dir: 'v', len: 10 },
+                    { dir: 'h', len: 20 },
+                    { dir: 'v', len: -5 },
+                    { dir: 'h', len: 10 }
+                ]},
+                // Chemin 2
+                { x: 60, y: 10, segments: [
+                    { dir: 'v', len: 15 },
+                    { dir: 'h', len: -10 },
+                    { dir: 'v', len: 10 },
+                    { dir: 'h', len: 15 }
+                ]},
+                // Chemin 3
+                { x: 80, y: 50, segments: [
+                    { dir: 'h', len: -20 },
+                    { dir: 'v', len: -10 },
+                    { dir: 'h', len: -15 },
+                    { dir: 'v', len: 15 }
+                ]}
+            ];
+            
+            paths.forEach((path, index) => {
+                let currentX = (path.x / 100) * window.innerWidth;
+                let currentY = (path.y / 100) * window.innerHeight;
+                
+                path.segments.forEach((segment, segIndex) => {
+                    const line = document.createElement('div');
+                    line.className = 'circuit-line';
+                    
+                    if (segment.dir === 'h') {
+                        line.classList.add('horizontal');
+                        line.style.left = (segment.len > 0 ? currentX : currentX + segment.len * 10) + 'px';
+                        line.style.top = currentY + 'px';
+                        line.style.width = Math.abs(segment.len * 10) + 'px';
+                        currentX += segment.len * 10;
+                    } else {
+                        line.classList.add('vertical');
+                        line.style.left = currentX + 'px';
+                        line.style.top = (segment.len > 0 ? currentY : currentY + segment.len * 10) + 'px';
+                        line.style.height = Math.abs(segment.len * 10) + 'px';
+                        currentY += segment.len * 10;
+                    }
+                    
+                    line.style.animationDelay = (index * 0.5 + segIndex * 0.2) + 's,' + (index * 0.5 + segIndex * 0.2 + 0.1) + 's';
+                    circuitBg.appendChild(line);
+                    
+                    // Ajouter un nœud à chaque jonction
+                    if (segIndex < path.segments.length - 1) {
+                        const node = document.createElement('div');
+                        node.className = 'circuit-node active';
+                        node.style.left = currentX + 'px';
+                        node.style.top = currentY + 'px';
+                        node.style.transform = 'translate(-50%, -50%)';
+                        node.style.animationDelay = (index * 0.5 + segIndex * 0.2) + 's';
+                        circuitBg.appendChild(node);
+                    }
+                });
+            });
+        }
+        
+        // Régénérer le circuit lors du redimensionnement
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const circuitBg = document.getElementById('circuitBg');
+                // Supprimer seulement les éléments dynamiques
+                const toRemove = circuitBg.querySelectorAll('.circuit-line, .circuit-node, .circuit-led, .electric-current, .electric-particle, .electric-diagonal, .electric-vertical, svg');
+                toRemove.forEach(el => el.remove());
+                
+                // Régénérer les circuits
+                generateCircuitBackground();
+            }, 300);
+        });
+        
+        // Persistance locale des fichiers (pour l'interface Claude)
+        function saveToLocalStorage() {
+            try {
+                const data = {
+                    fileSystem: fileSystem,
+                    openTabs: openTabs,
+                    activeFiles: activeFiles,
+                    editorThemes: editorThemes
+                };
+                localStorage.setItem('codeEditPro_data', JSON.stringify(data));
+            } catch (e) {
+                console.log('Sauvegarde locale non disponible');
+            }
+        }
+        
+        function loadFromLocalStorage() {
+            try {
+                const saved = localStorage.getItem('codeEditPro_data');
+                if (saved) {
+                    const data = JSON.parse(saved);
+                    if (data.fileSystem && Object.keys(data.fileSystem).length > 0) {
+                        fileSystem = data.fileSystem;
+                        openTabs = data.openTabs || [];
+                        activeFiles = data.activeFiles || { 1: null, 2: null };
+                        editorThemes = data.editorThemes || { 1: 'vs-dark', 2: 'cyberpunk-2077' };
+                        updateFileTree();
+                        showNotification('Projet restauré depuis la session précédente', 'success');
+                        return true;
+                    }
+                }
+            } catch (e) {
+                console.log('Chargement local non disponible');
+            }
+            return false;
+        }
+        
+        // Sauvegarder automatiquement
+        setInterval(saveToLocalStorage, 5000);
+        
+        // Charger les données sauvegardées
+        if (loadFromLocalStorage() && activeFiles[1]) {
+            setTimeout(() => {
+                openFileInEditor(activeFiles[1], 1);
+            }, 500);
+        } else {
+            // Ouvrir automatiquement le fichier index.html au démarrage
+            setTimeout(() => {
+                const indexFile = findFileInSystem('index.html');
+                if (indexFile) {
+                    openFileInEditor('index.html', 1);
+                }
+            }, 500);
+        }
         setTimeout(() => {
-            showNotification('💡 Astuce: Ctrl+R pour Run votre projet!', 'success');
+            showNotification('⚡ Interface Cyberpunk activée! Explorez les fichiers à gauche.', 'success');
         }, 2000);
+        
+        setTimeout(() => {
+            if (window.innerWidth <= 768) {
+                showNotification('📱 Toolbar mobile disponible lors de l\'édition!', 'success');
+            } else {
+                showNotification('🎨 Essayez Split View pour multi-éditeurs avec thèmes!', 'success');
+            }
+        }, 4000);
+        // Optimisation des performances
+        let animationFrameId;
+        function optimizeAnimations() {
+            const circuitBg = document.getElementById('circuitBg');
+            const isVisible = document.visibilityState === 'visible';
+            
+            if (isVisible) {
+                circuitBg.style.animationPlayState = 'running';
+            } else {
+                circuitBg.style.animationPlayState = 'paused';
+            }
+        }
+        
+        document.addEventListener('visibilitychange', optimizeAnimations);
+        
+        // Gestion de la mémoire
+        window.addEventListener('beforeunload', () => {
+            saveToLocalStorage();
+            if (editor) editor.dispose();
+            if (editor2) editor2.dispose();
+        });
+        
+        // Détection de la performance
+        if (window.performance && window.performance.memory) {
+            setInterval(() => {
+                const used = window.performance.memory.usedJSHeapSize;
+                const limit = window.performance.memory.jsHeapSizeLimit;
+                const percent = (used / limit) * 100;
+                
+                if (percent > 90) {
+                    console.warn('Mémoire élevée détectée. Considérez fermer des onglets.');
+                }
+            }, 30000);
+        }
+        
+        // Initialisation des circuits électriques
+        function initializeCircuitBackground() {
+            const circuitBg = document.getElementById('circuitBg');
+            if (!circuitBg) return;
+            
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            // Générer des particules électriques qui traversent l'écran
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'electric-particle';
+                particle.style.top = Math.random() * height + 'px';
+                particle.style.animationDelay = i * 0.5 + 's';
+                particle.style.animationDuration = (2 + Math.random() * 2) + 's';
+                circuitBg.appendChild(particle);
+            }
+            
+            // Particules diagonales
+            for (let i = 0; i < 5; i++) {
+                const diagonal = document.createElement('div');
+                diagonal.className = 'electric-diagonal';
+                diagonal.style.animationDelay = i * 1.5 + 's';
+                circuitBg.appendChild(diagonal);
+            }
+            
+            // Flux vertical
+            for (let i = 0; i < 8; i++) {
+                const vertical = document.createElement('div');
+                vertical.className = 'electric-vertical';
+                vertical.style.left = Math.random() * width + 'px';
+                vertical.style.animationDelay = i * 0.7 + 's';
+                vertical.style.animationDuration = (3 + Math.random() * 2) + 's';
+                circuitBg.appendChild(vertical);
+            }
+            
+            // Créer les chemins de circuit
+            createCircuitPaths();
+        }
+        
+        // Appeler l'initialisation après le chargement
+        document.addEventListener('DOMContentLoaded', initializeCircuitBackground);
+        
+        // Fin du script
+        console.log('✅ CodeEdit Pro chargé avec succès!');
     </script>
 </body>
 </html>
